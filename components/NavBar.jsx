@@ -54,6 +54,8 @@ export default function NavBar() {
         <Link href="/workout/new" style={linkStyle("/workout/new")}>기록하기</Link>
         <Link href="/history" style={linkStyle("/history")}>히스토리</Link>
         <Link href="/progress" style={linkStyle("/progress")}>그래프</Link>
+        <Link href="/stats" style={linkStyle("/stats")}>통계</Link>
+        <Link href="/weight" style={linkStyle("/weight")}>체중</Link>
       </div>
       <button
         onClick={handleLogout}

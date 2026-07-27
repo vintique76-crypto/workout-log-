@@ -5,6 +5,11 @@ import { useRequireSession } from "../../lib/useSession";
 import { useExerciseStats } from "../../lib/useExerciseStats";
 import { supabase } from "../../lib/supabaseClient";
 import { inputStyle, primaryBtn, smallBtn, card } from "../../lib/ui";
+import { MUSCLE_GROUPS } from "../../lib/muscleGroups";
+
+function emptyEntry() {
+  return { name: "", muscleGroup: "기타" };
+}
 
 export default function RoutinesPage() {
   const session = useRequireSession();
@@ -12,20 +17,20 @@ export default function RoutinesPage() {
   const [routines, setRoutines] = useState([]);
   const [loading, setLoading] = useState(true);
   const [name, setName] = useState("");
-  const [exercises, setExercises] = useState([""]);
+  const [exercises, setExercises] = useState([emptyEntry()]);
   const [saving, setSaving] = useState(false);
   const [error, setError] = useState("");
 
   const [editingId, setEditingId] = useState(null);
   const [editName, setEditName] = useState("");
-  const [editExercises, setEditExercises] = useState([""]);
+  const [editExercises, setEditExercises] = useState([emptyEntry()]);
   const [editSaving, setEditSaving] = useState(false);
   const [editError, setEditError] = useState("");
 
   const load = async () => {
     const { data } = await supabase
       .from("routines")
-      .select("id, name, created_at, routine_exercises(id, name, order_index)")
+      .select("id, name, created_at, routine_exercises(id, name, order_index, muscle_group)")
       .order("created_at", { ascending: false });
     setRoutines(data || []);
     setLoading(false);
@@ -37,20 +42,20 @@ export default function RoutinesPage() {
 
   if (!session) return <p>로딩 중...</p>;
 
-  const updateExercise = (i, value) => {
+  const updateExercise = (i, field, value) => {
     const next = [...exercises];
-    next[i] = value;
+    next[i] = { ...next[i], [field]: value };
     setExercises(next);
   };
 
-  const addExerciseField = () => setExercises([...exercises, ""]);
+  const addExerciseField = () => setExercises([...exercises, emptyEntry()]);
   const removeExerciseField = (i) => setExercises(exercises.filter((_, idx) => idx !== i));
 
   const handleCreate = async (e) => {
     e.preventDefault();
     setError("");
-    const cleanExercises = exercises.map((x) => x.trim()).filter(Boolean);
-    if (!name.trim() || cleanExercises.length === 0) {
+    const clean = exercises.map((x) => ({ ...x, name: x.name.trim() })).filter((x) => x.name);
+    if (!name.trim() || clean.length === 0) {
       setError("루틴 이름과 운동 종목을 최소 1개 입력해주세요.");
       return;
     }
@@ -63,16 +68,17 @@ export default function RoutinesPage() {
         .single();
       if (rErr) throw rErr;
 
-      const rows = cleanExercises.map((exName, idx) => ({
+      const rows = clean.map((x, idx) => ({
         routine_id: routine.id,
-        name: exName,
+        name: x.name,
+        muscle_group: x.muscleGroup,
         order_index: idx,
       }));
       const { error: eErr } = await supabase.from("routine_exercises").insert(rows);
       if (eErr) throw eErr;
 
       setName("");
-      setExercises([""]);
+      setExercises([emptyEntry()]);
       await load();
     } catch (err) {
       setError(err.message);
@@ -91,24 +97,26 @@ export default function RoutinesPage() {
     setEditingId(r.id);
     setEditName(r.name);
     const sorted = [...r.routine_exercises].sort((a, b) => a.order_index - b.order_index);
-    setEditExercises(sorted.length ? sorted.map((ex) => ex.name) : [""]);
+    setEditExercises(
+      sorted.length ? sorted.map((ex) => ({ name: ex.name, muscleGroup: ex.muscle_group || "기타" })) : [emptyEntry()]
+    );
     setEditError("");
   };
 
   const cancelEdit = () => setEditingId(null);
 
-  const updateEditExercise = (i, value) => {
+  const updateEditExercise = (i, field, value) => {
     const next = [...editExercises];
-    next[i] = value;
+    next[i] = { ...next[i], [field]: value };
     setEditExercises(next);
   };
-  const addEditExerciseField = () => setEditExercises([...editExercises, ""]);
+  const addEditExerciseField = () => setEditExercises([...editExercises, emptyEntry()]);
   const removeEditExerciseField = (i) => setEditExercises(editExercises.filter((_, idx) => idx !== i));
 
   const saveEdit = async (id) => {
     setEditError("");
-    const cleanExercises = editExercises.map((x) => x.trim()).filter(Boolean);
-    if (!editName.trim() || cleanExercises.length === 0) {
+    const clean = editExercises.map((x) => ({ ...x, name: x.name.trim() })).filter((x) => x.name);
+    if (!editName.trim() || clean.length === 0) {
       setEditError("루틴 이름과 운동 종목을 최소 1개 입력해주세요.");
       return;
     }
@@ -120,9 +128,10 @@ export default function RoutinesPage() {
       const { error: delErr } = await supabase.from("routine_exercises").delete().eq("routine_id", id);
       if (delErr) throw delErr;
 
-      const rows = cleanExercises.map((exName, idx) => ({
+      const rows = clean.map((x, idx) => ({
         routine_id: id,
-        name: exName,
+        name: x.name,
+        muscle_group: x.muscleGroup,
         order_index: idx,
       }));
       const { error: insErr } = await supabase.from("routine_exercises").insert(rows);
@@ -158,11 +167,22 @@ export default function RoutinesPage() {
           <div key={i} style={{ display: "flex", gap: 6 }}>
             <input
               placeholder={`운동 종목 ${i + 1} (예: 벤치프레스)`}
-              value={ex}
-              onChange={(e) => updateExercise(i, e.target.value)}
+              value={ex.name}
+              onChange={(e) => updateExercise(i, "name", e.target.value)}
               list="exercise-names"
               style={{ ...inputStyle, flex: 1 }}
             />
+            <select
+              value={ex.muscleGroup}
+              onChange={(e) => updateExercise(i, "muscleGroup", e.target.value)}
+              style={{ ...inputStyle, width: 90, flex: "0 0 auto" }}
+            >
+              {MUSCLE_GROUPS.map((g) => (
+                <option key={g} value={g}>
+                  {g}
+                </option>
+              ))}
+            </select>
             {exercises.length > 1 && (
               <button type="button" onClick={() => removeExerciseField(i)} style={smallBtn}>
                 삭제
@@ -192,11 +212,22 @@ export default function RoutinesPage() {
               {editExercises.map((ex, i) => (
                 <div key={i} style={{ display: "flex", gap: 6 }}>
                   <input
-                    value={ex}
-                    onChange={(e) => updateEditExercise(i, e.target.value)}
+                    value={ex.name}
+                    onChange={(e) => updateEditExercise(i, "name", e.target.value)}
                     list="exercise-names"
                     style={{ ...inputStyle, flex: 1 }}
                   />
+                  <select
+                    value={ex.muscleGroup}
+                    onChange={(e) => updateEditExercise(i, "muscleGroup", e.target.value)}
+                    style={{ ...inputStyle, width: 90, flex: "0 0 auto" }}
+                  >
+                    {MUSCLE_GROUPS.map((g) => (
+                      <option key={g} value={g}>
+                        {g}
+                      </option>
+                    ))}
+                  </select>
                   {editExercises.length > 1 && (
                     <button type="button" onClick={() => removeEditExerciseField(i)} style={smallBtn}>
                       삭제
@@ -234,7 +265,10 @@ export default function RoutinesPage() {
                 {[...r.routine_exercises]
                   .sort((a, b) => a.order_index - b.order_index)
                   .map((ex) => (
-                    <li key={ex.id}>{ex.name}</li>
+                    <li key={ex.id}>
+                      {ex.name}
+                      {ex.muscle_group && <span style={{ color: "#aaa" }}> · {ex.muscle_group}</span>}
+                    </li>
                   ))}
               </ul>
             </div>

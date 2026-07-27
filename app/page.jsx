@@ -5,22 +5,43 @@ import { useEffect, useState } from "react";
 import { useRequireSession } from "../lib/useSession";
 import { supabase } from "../lib/supabaseClient";
 import { primaryBtn, card } from "../lib/ui";
+import { dateStr } from "../lib/date";
+import CalendarHeatmap from "../components/CalendarHeatmap";
 
 export default function HomePage() {
   const session = useRequireSession();
   const [recent, setRecent] = useState([]);
+  const [dateCounts, setDateCounts] = useState({});
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
     if (!session) return;
     (async () => {
-      const { data } = await supabase
-        .from("workouts")
-        .select("id, date, routines(name)")
-        .order("date", { ascending: false })
-        .order("created_at", { ascending: false })
-        .limit(5);
-      setRecent(data || []);
+      const from = new Date();
+      from.setDate(from.getDate() - 90);
+
+      const [{ data: recentData }, { data: setsData }] = await Promise.all([
+        supabase
+          .from("workouts")
+          .select("id, date, routines(name)")
+          .order("date", { ascending: false })
+          .order("created_at", { ascending: false })
+          .limit(5),
+        supabase
+          .from("workout_sets")
+          .select("workouts!inner(date)")
+          .gte("workouts.date", dateStr(from)),
+      ]);
+
+      setRecent(recentData || []);
+
+      const counts = {};
+      (setsData || []).forEach((r) => {
+        const d = r.workouts?.date;
+        if (!d) return;
+        counts[d] = (counts[d] || 0) + 1;
+      });
+      setDateCounts(counts);
       setLoading(false);
     })();
   }, [session]);
@@ -37,7 +58,10 @@ export default function HomePage() {
         오늘 운동 기록하기
       </Link>
 
-      <h2 style={{ fontSize: 16, marginTop: 32 }}>최근 기록</h2>
+      <h2 style={{ fontSize: 16, marginTop: 28 }}>최근 90일</h2>
+      <CalendarHeatmap dateCounts={dateCounts} />
+
+      <h2 style={{ fontSize: 16, marginTop: 24 }}>최근 기록</h2>
       {loading ? (
         <p>불러오는 중...</p>
       ) : recent.length === 0 ? (

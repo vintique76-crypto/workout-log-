@@ -6,17 +6,12 @@ import { useRequireSession } from "../../../lib/useSession";
 import { useExerciseStats } from "../../../lib/useExerciseStats";
 import { supabase } from "../../../lib/supabaseClient";
 import { inputStyle, primaryBtn, smallBtn, card } from "../../../lib/ui";
+import { todayStr } from "../../../lib/date";
+import { MUSCLE_GROUPS } from "../../../lib/muscleGroups";
 import RestTimer from "../../../components/RestTimer";
 
-function todayStr() {
-  const d = new Date();
-  const off = d.getTimezoneOffset();
-  const local = new Date(d.getTime() - off * 60000);
-  return local.toISOString().slice(0, 10);
-}
-
-function emptyExercise(name = "") {
-  return { name, sets: [{ reps: "", weight: "" }] };
+function emptyExercise(name = "", muscleGroup = "기타") {
+  return { name, muscleGroup, sets: [{ reps: "", weight: "" }] };
 }
 
 export default function NewWorkoutPage() {
@@ -35,7 +30,7 @@ export default function NewWorkoutPage() {
     (async () => {
       const { data } = await supabase
         .from("routines")
-        .select("id, name, routine_exercises(id, name, order_index)")
+        .select("id, name, routine_exercises(id, name, order_index, muscle_group)")
         .order("created_at", { ascending: false });
       setRoutines(data || []);
     })();
@@ -51,12 +46,20 @@ export default function NewWorkoutPage() {
     }
     const r = routines.find((r) => r.id === id);
     const sorted = [...(r?.routine_exercises || [])].sort((a, b) => a.order_index - b.order_index);
-    setExercises(sorted.length ? sorted.map((ex) => emptyExercise(ex.name)) : [emptyExercise()]);
+    setExercises(
+      sorted.length ? sorted.map((ex) => emptyExercise(ex.name, ex.muscle_group || "기타")) : [emptyExercise()]
+    );
   };
 
   const updateExerciseName = (i, value) => {
     const next = [...exercises];
     next[i] = { ...next[i], name: value };
+    setExercises(next);
+  };
+
+  const updateExerciseMuscleGroup = (i, value) => {
+    const next = [...exercises];
+    next[i] = { ...next[i], muscleGroup: value };
     setExercises(next);
   };
 
@@ -91,6 +94,7 @@ export default function NewWorkoutPage() {
         if (s.reps === "" || s.weight === "") return;
         rows.push({
           exercise_name: exName,
+          muscle_group: ex.muscleGroup,
           set_index: idx,
           reps: Number(s.reps),
           weight: Number(s.weight),
@@ -161,6 +165,17 @@ export default function NewWorkoutPage() {
                 list="exercise-names"
                 style={{ ...inputStyle, flex: 1 }}
               />
+              <select
+                value={ex.muscleGroup}
+                onChange={(e) => updateExerciseMuscleGroup(exIdx, e.target.value)}
+                style={{ ...inputStyle, width: 90, flex: "0 0 auto" }}
+              >
+                {MUSCLE_GROUPS.map((g) => (
+                  <option key={g} value={g}>
+                    {g}
+                  </option>
+                ))}
+              </select>
               {exercises.length > 1 && (
                 <button onClick={() => removeExercise(exIdx)} style={smallBtn}>
                   종목 삭제
