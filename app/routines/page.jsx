@@ -8,6 +8,7 @@ import { supabase } from "../../lib/supabaseClient";
 import { inputStyle, primaryBtn, smallBtn, card } from "../../lib/ui";
 import { MUSCLE_GROUPS } from "../../lib/muscleGroups";
 import MoveIconBadge from "../../components/MoveIconBadge";
+import ExercisePicker from "../../components/ExercisePicker";
 
 function emptyEntry() {
   return { name: "", muscleGroup: "기타" };
@@ -28,6 +29,7 @@ export default function RoutinesPage() {
   const [editExercises, setEditExercises] = useState([emptyEntry()]);
   const [editSaving, setEditSaving] = useState(false);
   const [editError, setEditError] = useState("");
+  const [picker, setPicker] = useState(null);
 
   const load = async () => {
     const { data } = await supabase
@@ -45,9 +47,7 @@ export default function RoutinesPage() {
   if (!session) return <p>로딩 중...</p>;
 
   const updateExercise = (i, field, value) => {
-    const next = [...exercises];
-    next[i] = { ...next[i], [field]: value };
-    setExercises(next);
+    setExercises((prev) => prev.map((ex, idx) => (idx === i ? { ...ex, [field]: value } : ex)));
   };
 
   const addExerciseField = () => setExercises([...exercises, emptyEntry()]);
@@ -108,9 +108,7 @@ export default function RoutinesPage() {
   const cancelEdit = () => setEditingId(null);
 
   const updateEditExercise = (i, field, value) => {
-    const next = [...editExercises];
-    next[i] = { ...next[i], [field]: value };
-    setEditExercises(next);
+    setEditExercises((prev) => prev.map((ex, idx) => (idx === i ? { ...ex, [field]: value } : ex)));
   };
   const addEditExerciseField = () => setEditExercises([...editExercises, emptyEntry()]);
   const removeEditExerciseField = (i) => setEditExercises(editExercises.filter((_, idx) => idx !== i));
@@ -167,7 +165,12 @@ export default function RoutinesPage() {
         />
         {exercises.map((ex, i) => (
           <div key={i} style={{ display: "flex", gap: 6, alignItems: "center" }}>
-            <MoveIconBadge name={ex.name} muscleGroup={ex.muscleGroup} size={32} />
+            <MoveIconBadge
+              name={ex.name}
+              muscleGroup={ex.muscleGroup}
+              size={32}
+              onClick={() => setPicker({ mode: "create", index: i })}
+            />
             <input
               placeholder={`운동 종목 ${i + 1} (예: 벤치프레스)`}
               value={ex.name}
@@ -224,7 +227,12 @@ export default function RoutinesPage() {
               <input value={editName} onChange={(e) => setEditName(e.target.value)} style={inputStyle} />
               {editExercises.map((ex, i) => (
                 <div key={i} style={{ display: "flex", gap: 6, alignItems: "center" }}>
-                  <MoveIconBadge name={ex.name} muscleGroup={ex.muscleGroup} size={32} />
+                  <MoveIconBadge
+                    name={ex.name}
+                    muscleGroup={ex.muscleGroup}
+                    size={32}
+                    onClick={() => setPicker({ mode: "edit", index: i })}
+                  />
                   <input
                     value={ex.name}
                     onChange={(e) => updateEditExercise(i, "name", e.target.value)}
@@ -300,6 +308,20 @@ export default function RoutinesPage() {
           )
         )
       )}
+
+      <ExercisePicker
+        open={picker !== null}
+        onClose={() => setPicker(null)}
+        onSelect={(ex) => {
+          if (picker?.mode === "create") {
+            updateExercise(picker.index, "name", ex.name);
+            updateExercise(picker.index, "muscleGroup", ex.muscleGroup);
+          } else if (picker?.mode === "edit") {
+            updateEditExercise(picker.index, "name", ex.name);
+            updateEditExercise(picker.index, "muscleGroup", ex.muscleGroup);
+          }
+        }}
+      />
     </div>
   );
 }

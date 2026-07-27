@@ -10,6 +10,7 @@ import { todayStr } from "../../../lib/date";
 import { MUSCLE_GROUPS } from "../../../lib/muscleGroups";
 import RestTimer from "../../../components/RestTimer";
 import MoveIconBadge from "../../../components/MoveIconBadge";
+import ExercisePicker from "../../../components/ExercisePicker";
 
 function emptyExercise(name = "", muscleGroup = "기타") {
   return { name, muscleGroup, sets: [{ reps: "", weight: "" }] };
@@ -25,6 +26,7 @@ export default function NewWorkoutPage() {
   const [exercises, setExercises] = useState([emptyExercise()]);
   const [saving, setSaving] = useState(false);
   const [error, setError] = useState("");
+  const [pickerIndex, setPickerIndex] = useState(null);
 
   useEffect(() => {
     if (!session) return;
@@ -53,15 +55,11 @@ export default function NewWorkoutPage() {
   };
 
   const updateExerciseName = (i, value) => {
-    const next = [...exercises];
-    next[i] = { ...next[i], name: value };
-    setExercises(next);
+    setExercises((prev) => prev.map((ex, idx) => (idx === i ? { ...ex, name: value } : ex)));
   };
 
   const updateExerciseMuscleGroup = (i, value) => {
-    const next = [...exercises];
-    next[i] = { ...next[i], muscleGroup: value };
-    setExercises(next);
+    setExercises((prev) => prev.map((ex, idx) => (idx === i ? { ...ex, muscleGroup: value } : ex)));
   };
 
   const addExercise = () => setExercises([...exercises, emptyExercise()]);
@@ -159,7 +157,7 @@ export default function NewWorkoutPage() {
         return (
           <div key={exIdx} style={card}>
             <div style={{ display: "flex", gap: 6, alignItems: "center" }}>
-              <MoveIconBadge name={ex.name} muscleGroup={ex.muscleGroup} />
+              <MoveIconBadge name={ex.name} muscleGroup={ex.muscleGroup} onClick={() => setPickerIndex(exIdx)} />
               <input
                 placeholder="운동 종목 (예: 벤치프레스)"
                 value={ex.name}
@@ -238,6 +236,15 @@ export default function NewWorkoutPage() {
       <button onClick={handleSave} disabled={saving} style={{ ...primaryBtn, width: "100%", marginTop: 16 }}>
         {saving ? "저장 중..." : "기록 저장"}
       </button>
+
+      <ExercisePicker
+        open={pickerIndex !== null}
+        onClose={() => setPickerIndex(null)}
+        onSelect={(ex) => {
+          updateExerciseName(pickerIndex, ex.name);
+          updateExerciseMuscleGroup(pickerIndex, ex.muscleGroup);
+        }}
+      />
     </div>
   );
 }

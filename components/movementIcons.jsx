@@ -108,6 +108,17 @@ export function DumbbellIcon(props) {
   );
 }
 
+export function MachineIcon(props) {
+  return (
+    <Svg {...props}>
+      <rect x="4" y="4" width="16" height="3" rx="1" />
+      <rect x="4" y="9" width="16" height="3" rx="1" />
+      <rect x="4" y="14" width="10" height="3" rx="1" />
+      <path d="M18 15.5v4M16 17.5h4" />
+    </Svg>
+  );
+}
+
 export const MOVEMENT_ICONS = {
   press: PressIcon,
   pull: PullIcon,
@@ -118,4 +129,5 @@ export const MOVEMENT_ICONS = {
   core: CoreIcon,
   cardio: CardioIcon,
   dumbbell: DumbbellIcon,
+  machine: MachineIcon,
 };
