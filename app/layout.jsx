@@ -1,4 +1,5 @@
-import NavBar from "../components/NavBar";
+import "./globals.css";
+import BottomTabBar from "../components/BottomTabBar";
 import RegisterSW from "../components/RegisterSW";
 
 export const metadata = {
@@ -7,29 +8,22 @@ export const metadata = {
   manifest: "/manifest.json",
   appleWebApp: {
     capable: true,
-    statusBarStyle: "default",
+    statusBarStyle: "black-translucent",
     title: "운동 기록",
   },
 };
 
 export const viewport = {
-  themeColor: "#111111",
+  themeColor: "#1c1917",
 };
 
 export default function RootLayout({ children }) {
   return (
     <html lang="ko">
-      <body
-        style={{
-          margin: 0,
-          fontFamily: "-apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif",
-          background: "#fafafa",
-          color: "#111",
-        }}
-      >
+      <body>
         <RegisterSW />
-        <NavBar />
-        <main style={{ maxWidth: 480, margin: "0 auto", padding: "16px" }}>{children}</main>
+        <main style={{ maxWidth: 480, margin: "0 auto", padding: "16px", paddingBottom: 96 }}>{children}</main>
+        <BottomTabBar />
       </body>
     </html>
   );

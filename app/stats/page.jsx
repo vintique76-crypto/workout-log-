@@ -12,6 +12,14 @@ const RANGES = [
   { label: "전체", days: null },
 ];
 
+const tooltipStyle = {
+  background: "#2f2b28",
+  border: "1px solid #3a352f",
+  borderRadius: 10,
+  color: "#f2ede6",
+  fontSize: 13,
+};
+
 export default function StatsPage() {
   const session = useRequireSession();
   const [range, setRange] = useState(RANGES[0]);
@@ -56,10 +64,11 @@ export default function StatsPage() {
             onClick={() => setRange(r)}
             style={{
               padding: "6px 12px",
-              borderRadius: 6,
-              border: "1px solid #ccc",
-              background: range.label === r.label ? "#111" : "#fff",
-              color: range.label === r.label ? "#fff" : "#111",
+              borderRadius: "var(--radius-sm)",
+              border: "1px solid var(--border)",
+              background: range.label === r.label ? "var(--accent)" : "var(--bg-elevated)",
+              color: range.label === r.label ? "var(--accent-text)" : "var(--text)",
+              fontWeight: range.label === r.label ? 600 : 400,
               fontSize: 13,
               cursor: "pointer",
             }}
@@ -72,15 +81,15 @@ export default function StatsPage() {
       {loading ? (
         <p style={{ marginTop: 16 }}>불러오는 중...</p>
       ) : chartData.length === 0 ? (
-        <p style={{ color: "#888", marginTop: 16 }}>해당 기간에 기록이 없어요.</p>
+        <p style={{ color: "var(--text-muted)", marginTop: 16 }}>해당 기간에 기록이 없어요.</p>
       ) : (
         <ResponsiveContainer width="100%" height={Math.max(220, chartData.length * 44)}>
           <BarChart data={chartData} layout="vertical" margin={{ left: 16, right: 16 }}>
-            <CartesianGrid strokeDasharray="3 3" />
-            <XAxis type="number" fontSize={11} />
-            <YAxis type="category" dataKey="group" fontSize={12} width={50} />
-            <Tooltip />
-            <Bar dataKey="volume" fill="#0070f3" />
+            <CartesianGrid strokeDasharray="3 3" stroke="#3a352f" />
+            <XAxis type="number" fontSize={11} stroke="#a89f92" />
+            <YAxis type="category" dataKey="group" fontSize={12} width={50} stroke="#a89f92" />
+            <Tooltip contentStyle={tooltipStyle} cursor={{ fill: "rgba(232,130,90,0.08)" }} />
+            <Bar dataKey="volume" fill="#e8825a" radius={[0, 6, 6, 0]} />
           </BarChart>
         </ResponsiveContainer>
       )}

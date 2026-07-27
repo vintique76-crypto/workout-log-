@@ -58,19 +58,29 @@ export default function HomePage() {
         오늘 운동 기록하기
       </Link>
 
-      <h2 style={{ fontSize: 16, marginTop: 28 }}>최근 90일</h2>
+      <h2 style={{ fontSize: 13, marginTop: 28, color: "var(--text-muted)", textTransform: "uppercase", letterSpacing: 0.4 }}>최근 90일</h2>
       <CalendarHeatmap dateCounts={dateCounts} />
 
-      <h2 style={{ fontSize: 16, marginTop: 24 }}>최근 기록</h2>
+      <h2
+        style={{
+          fontSize: 13,
+          marginTop: 24,
+          color: "var(--text-muted)",
+          textTransform: "uppercase",
+          letterSpacing: 0.4,
+        }}
+      >
+        최근 기록
+      </h2>
       {loading ? (
         <p>불러오는 중...</p>
       ) : recent.length === 0 ? (
-        <p style={{ color: "#888" }}>아직 기록이 없어요. 첫 운동을 기록해보세요.</p>
+        <p style={{ color: "var(--text-muted)" }}>아직 기록이 없어요. 첫 운동을 기록해보세요.</p>
       ) : (
         recent.map((w) => (
           <div key={w.id} style={{ ...card, display: "flex", justifyContent: "space-between" }}>
             <span>{w.date}</span>
-            <span style={{ color: "#888" }}>{w.routines?.name || "자유 기록"}</span>
+            <span style={{ color: "var(--text-muted)" }}>{w.routines?.name || "자유 기록"}</span>
           </div>
         ))
       )}

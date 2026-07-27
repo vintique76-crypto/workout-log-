@@ -184,7 +184,7 @@ export default function NewWorkoutPage() {
             </div>
 
             {pr !== undefined && (
-              <p style={{ fontSize: 12, color: "#888", margin: "6px 0 0" }}>개인 최고 기록: {pr}kg</p>
+              <p style={{ fontSize: 12, color: "var(--text-muted)", margin: "6px 0 0" }}>개인 최고 기록: {pr}kg</p>
             )}
 
             <div style={{ marginTop: 10 }}>
@@ -192,7 +192,7 @@ export default function NewWorkoutPage() {
                 const isNewPR = pr !== undefined && s.weight !== "" && Number(s.weight) > pr;
                 return (
                   <div key={setIdx} style={{ display: "flex", gap: 6, alignItems: "center", marginTop: 6 }}>
-                    <span style={{ width: 40, fontSize: 13, color: "#888" }}>{setIdx + 1}세트</span>
+                    <span style={{ width: 40, fontSize: 13, color: "var(--text-muted)" }}>{setIdx + 1}세트</span>
                     <input
                       type="number"
                       placeholder="횟수"
@@ -206,9 +206,11 @@ export default function NewWorkoutPage() {
                       placeholder="무게(kg)"
                       value={s.weight}
                       onChange={(e) => updateSet(exIdx, setIdx, "weight", e.target.value)}
-                      style={{ ...inputStyle, flex: 1, borderColor: isNewPR ? "#0a0" : undefined }}
+                      style={{ ...inputStyle, flex: 1, borderColor: isNewPR ? "var(--success)" : undefined }}
                     />
-                    {isNewPR && <span style={{ fontSize: 12, color: "#0a0", whiteSpace: "nowrap" }}>신기록!</span>}
+                    {isNewPR && (
+                      <span style={{ fontSize: 12, color: "var(--success)", whiteSpace: "nowrap" }}>신기록!</span>
+                    )}
                     {ex.sets.length > 1 && (
                       <button onClick={() => removeSet(exIdx, setIdx)} style={smallBtn}>
                         X
@@ -229,7 +231,7 @@ export default function NewWorkoutPage() {
         + 종목 추가
       </button>
 
-      {error && <p style={{ color: "#c00", fontSize: 13, marginTop: 12 }}>{error}</p>}
+      {error && <p style={{ color: "var(--danger)", fontSize: 13, marginTop: 12 }}>{error}</p>}
 
       <button onClick={handleSave} disabled={saving} style={{ ...primaryBtn, width: "100%", marginTop: 16 }}>
         {saving ? "저장 중..." : "기록 저장"}
@@ -238,4 +240,4 @@ export default function NewWorkoutPage() {
   );
 }
 
-const labelStyle = { display: "block", fontSize: 13, color: "#666", marginBottom: 6 };
+const labelStyle = { display: "block", fontSize: 13, color: "var(--text-muted)", marginBottom: 6 };

@@ -5,10 +5,10 @@ import { dateStr } from "../lib/date";
 const WEEKS = 12;
 
 function colorFor(count) {
-  if (!count) return "#ebedf0";
-  if (count === 1) return "#9be9a8";
-  if (count <= 3) return "#40c463";
-  return "#216e39";
+  if (!count) return "#2f2b28";
+  if (count === 1) return "#6b4130";
+  if (count <= 3) return "#b45c3c";
+  return "#e8825a";
 }
 
 export default function CalendarHeatmap({ dateCounts }) {

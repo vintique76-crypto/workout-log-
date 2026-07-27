@@ -32,8 +32,8 @@ function chunk(type, data) {
 }
 
 function makeIcon(size, filename) {
-  const bg = [17, 17, 17];
-  const fg = [255, 255, 255];
+  const bg = [28, 25, 23];
+  const fg = [232, 130, 90];
   const raw = Buffer.alloc(size * (size * 3 + 1));
   const cx = size / 2;
   const cy = size / 2;

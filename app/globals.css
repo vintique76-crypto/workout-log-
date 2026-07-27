@@ -1,0 +1,60 @@
+:root {
+  --bg: #1c1917;
+  --bg-elevated: #252220;
+  --bg-elevated-2: #2f2b28;
+  --border: #3a352f;
+  --text: #f2ede6;
+  --text-muted: #a89f92;
+  --text-faint: #6f675d;
+  --accent: #e8825a;
+  --accent-hover: #f0966f;
+  --accent-text: #1c1917;
+  --accent-2: #5aa9a3;
+  --success: #8fbf6a;
+  --danger: #e2574c;
+  --radius: 14px;
+  --radius-sm: 10px;
+}
+
+* {
+  box-sizing: border-box;
+}
+
+html,
+body {
+  margin: 0;
+  padding: 0;
+  background: var(--bg);
+  color: var(--text);
+  font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+  -webkit-tap-highlight-color: transparent;
+}
+
+input,
+select,
+textarea,
+button {
+  font-family: inherit;
+}
+
+input::placeholder {
+  color: var(--text-faint);
+}
+
+input[type="date"]::-webkit-calendar-picker-indicator {
+  filter: invert(0.8);
+}
+
+a {
+  color: inherit;
+}
+
+::-webkit-scrollbar {
+  width: 8px;
+  height: 8px;
+}
+
+::-webkit-scrollbar-thumb {
+  background: var(--bg-elevated-2);
+  border-radius: 8px;
+}

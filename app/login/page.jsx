@@ -41,7 +41,15 @@ export default function LoginPage() {
     <div style={{ maxWidth: 360, margin: "60px auto", padding: 20 }}>
       <h1 style={{ fontSize: 22, marginBottom: 24, textAlign: "center" }}>내 운동 기록</h1>
 
-      <div style={{ display: "flex", marginBottom: 20, border: "1px solid #ddd", borderRadius: 8, overflow: "hidden" }}>
+      <div
+        style={{
+          display: "flex",
+          marginBottom: 20,
+          border: "1px solid var(--border)",
+          borderRadius: "var(--radius-sm)",
+          overflow: "hidden",
+        }}
+      >
         <button
           type="button"
           onClick={() => setMode("login")}
@@ -49,8 +57,9 @@ export default function LoginPage() {
             flex: 1,
             padding: 10,
             border: "none",
-            background: mode === "login" ? "#111" : "#fff",
-            color: mode === "login" ? "#fff" : "#111",
+            background: mode === "login" ? "var(--accent)" : "var(--bg-elevated)",
+            color: mode === "login" ? "var(--accent-text)" : "var(--text)",
+            fontWeight: mode === "login" ? 600 : 400,
             cursor: "pointer",
           }}
         >
@@ -63,8 +72,9 @@ export default function LoginPage() {
             flex: 1,
             padding: 10,
             border: "none",
-            background: mode === "signup" ? "#111" : "#fff",
-            color: mode === "signup" ? "#fff" : "#111",
+            background: mode === "signup" ? "var(--accent)" : "var(--bg-elevated)",
+            color: mode === "signup" ? "var(--accent-text)" : "var(--text)",
+            fontWeight: mode === "signup" ? 600 : 400,
             cursor: "pointer",
           }}
         >
@@ -90,8 +100,8 @@ export default function LoginPage() {
           onChange={(e) => setPassword(e.target.value)}
           style={inputStyle}
         />
-        {error && <p style={{ color: "#c00", fontSize: 13 }}>{error}</p>}
-        {info && <p style={{ color: "#080", fontSize: 13 }}>{info}</p>}
+        {error && <p style={{ color: "var(--danger)", fontSize: 13 }}>{error}</p>}
+        {info && <p style={{ color: "var(--success)", fontSize: 13 }}>{info}</p>}
         <button type="submit" disabled={loading} style={{ ...primaryBtn, marginTop: 6 }}>
           {loading ? "처리 중..." : mode === "login" ? "로그인" : "가입하기"}
         </button>

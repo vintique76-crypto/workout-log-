@@ -1,7 +1,6 @@
 "use client";
 
 import { useEffect, useRef, useState } from "react";
-import { smallBtn } from "../lib/ui";
 
 const PRESETS = [60, 90, 120];
 
@@ -36,28 +35,37 @@ export default function RestTimer() {
   const ss = remaining !== null ? Math.max(remaining, 0) % 60 : 0;
   const done = remaining !== null && remaining <= 0;
 
+  const activeBtnStyle = {
+    padding: "6px 10px",
+    borderRadius: 8,
+    border: "none",
+    fontSize: 13,
+    cursor: "pointer",
+  };
+
   return (
     <div
       style={{
         position: "sticky",
-        top: 49,
-        background: "#111",
-        color: "#fff",
-        borderRadius: 10,
+        top: 8,
+        background: remaining === null ? "var(--bg-elevated-2)" : done ? "var(--danger)" : "var(--accent)",
+        color: remaining === null ? "var(--text)" : "var(--accent-text)",
+        borderRadius: "var(--radius)",
         padding: 12,
         marginTop: 10,
         zIndex: 5,
+        transition: "background 0.2s",
       }}
     >
       {remaining === null ? (
         <div style={{ display: "flex", gap: 8, alignItems: "center", justifyContent: "center" }}>
-          <span style={{ fontSize: 13, color: "#ccc" }}>휴식 타이머</span>
+          <span style={{ fontSize: 13, color: "var(--text-muted)" }}>휴식 타이머</span>
           {PRESETS.map((p) => (
             <button
               key={p}
               type="button"
               onClick={() => start(p)}
-              style={{ ...smallBtn, background: "#333", color: "#fff", border: "none" }}
+              style={{ ...activeBtnStyle, background: "var(--bg-elevated)", color: "var(--text)" }}
             >
               {p}초
             </button>
@@ -65,27 +73,21 @@ export default function RestTimer() {
         </div>
       ) : (
         <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between" }}>
-          <span
-            style={{
-              fontSize: 22,
-              fontVariantNumeric: "tabular-nums",
-              color: done ? "#ff6666" : "#fff",
-            }}
-          >
+          <span style={{ fontSize: 22, fontWeight: 700, fontVariantNumeric: "tabular-nums" }}>
             {done ? "휴식 종료" : `${String(mm).padStart(2, "0")}:${String(ss).padStart(2, "0")}`}
           </span>
           <div style={{ display: "flex", gap: 6 }}>
             <button
               type="button"
               onClick={() => start(total)}
-              style={{ ...smallBtn, background: "#333", color: "#fff", border: "none" }}
+              style={{ ...activeBtnStyle, background: "rgba(0,0,0,0.18)", color: "var(--accent-text)" }}
             >
               재시작
             </button>
             <button
               type="button"
               onClick={stop}
-              style={{ ...smallBtn, background: "#333", color: "#fff", border: "none" }}
+              style={{ ...activeBtnStyle, background: "rgba(0,0,0,0.18)", color: "var(--accent-text)" }}
             >
               끄기
             </button>

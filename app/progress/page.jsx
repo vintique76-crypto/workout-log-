@@ -6,6 +6,22 @@ import { useRequireSession } from "../../lib/useSession";
 import { supabase } from "../../lib/supabaseClient";
 import { inputStyle } from "../../lib/ui";
 
+const sectionLabel = {
+  fontSize: 13,
+  marginTop: 24,
+  color: "var(--text-muted)",
+  textTransform: "uppercase",
+  letterSpacing: 0.4,
+};
+
+const tooltipStyle = {
+  background: "#2f2b28",
+  border: "1px solid #3a352f",
+  borderRadius: 10,
+  color: "#f2ede6",
+  fontSize: 13,
+};
+
 export default function ProgressPage() {
   const session = useRequireSession();
   const [exerciseNames, setExerciseNames] = useState([]);
@@ -54,10 +70,14 @@ export default function ProgressPage() {
     <div>
       <h1 style={{ fontSize: 20 }}>진행 그래프</h1>
       {exerciseNames.length === 0 ? (
-        <p style={{ color: "#888", marginTop: 12 }}>아직 기록된 운동이 없어요. 먼저 운동을 기록해보세요.</p>
+        <p style={{ color: "var(--text-muted)", marginTop: 12 }}>아직 기록된 운동이 없어요. 먼저 운동을 기록해보세요.</p>
       ) : (
         <>
-          <select value={selected} onChange={(e) => setSelected(e.target.value)} style={{ ...inputStyle, marginTop: 12 }}>
+          <select
+            value={selected}
+            onChange={(e) => setSelected(e.target.value)}
+            style={{ ...inputStyle, marginTop: 12 }}
+          >
             {exerciseNames.map((n) => (
               <option key={n} value={n}>
                 {n}
@@ -68,28 +88,30 @@ export default function ProgressPage() {
           {loading ? (
             <p>불러오는 중...</p>
           ) : chartData.length < 2 ? (
-            <p style={{ color: "#888", marginTop: 16 }}>그래프를 그리려면 같은 종목을 2번 이상 기록해주세요.</p>
+            <p style={{ color: "var(--text-muted)", marginTop: 16 }}>
+              그래프를 그리려면 같은 종목을 2번 이상 기록해주세요.
+            </p>
           ) : (
             <>
-              <h2 style={{ fontSize: 14, marginTop: 24, color: "#666" }}>최고 무게 (kg)</h2>
+              <h2 style={sectionLabel}>최고 무게 (kg)</h2>
               <ResponsiveContainer width="100%" height={220}>
                 <LineChart data={chartData}>
-                  <CartesianGrid strokeDasharray="3 3" />
-                  <XAxis dataKey="date" fontSize={11} />
-                  <YAxis fontSize={11} />
-                  <Tooltip />
-                  <Line type="monotone" dataKey="maxWeight" stroke="#111" strokeWidth={2} dot={{ r: 3 }} />
+                  <CartesianGrid strokeDasharray="3 3" stroke="#3a352f" />
+                  <XAxis dataKey="date" fontSize={11} stroke="#a89f92" />
+                  <YAxis fontSize={11} stroke="#a89f92" />
+                  <Tooltip contentStyle={tooltipStyle} />
+                  <Line type="monotone" dataKey="maxWeight" stroke="#e8825a" strokeWidth={2} dot={{ r: 3 }} />
                 </LineChart>
               </ResponsiveContainer>
 
-              <h2 style={{ fontSize: 14, marginTop: 24, color: "#666" }}>총 볼륨 (횟수 × 무게 합)</h2>
+              <h2 style={sectionLabel}>총 볼륨 (횟수 × 무게 합)</h2>
               <ResponsiveContainer width="100%" height={220}>
                 <LineChart data={chartData}>
-                  <CartesianGrid strokeDasharray="3 3" />
-                  <XAxis dataKey="date" fontSize={11} />
-                  <YAxis fontSize={11} />
-                  <Tooltip />
-                  <Line type="monotone" dataKey="volume" stroke="#0070f3" strokeWidth={2} dot={{ r: 3 }} />
+                  <CartesianGrid strokeDasharray="3 3" stroke="#3a352f" />
+                  <XAxis dataKey="date" fontSize={11} stroke="#a89f92" />
+                  <YAxis fontSize={11} stroke="#a89f92" />
+                  <Tooltip contentStyle={tooltipStyle} />
+                  <Line type="monotone" dataKey="volume" stroke="#5aa9a3" strokeWidth={2} dot={{ r: 3 }} />
                 </LineChart>
               </ResponsiveContainer>
             </>

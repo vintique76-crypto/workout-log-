@@ -7,6 +7,14 @@ import { supabase } from "../../lib/supabaseClient";
 import { inputStyle, primaryBtn, smallBtn, card } from "../../lib/ui";
 import { todayStr } from "../../lib/date";
 
+const tooltipStyle = {
+  background: "#2f2b28",
+  border: "1px solid #3a352f",
+  borderRadius: 10,
+  color: "#f2ede6",
+  fontSize: 13,
+};
+
 export default function WeightPage() {
   const session = useRequireSession();
   const [entries, setEntries] = useState([]);
@@ -84,33 +92,43 @@ export default function WeightPage() {
           {saving ? "저장 중..." : "저장"}
         </button>
       </form>
-      {error && <p style={{ color: "#c00", fontSize: 13, marginTop: 8 }}>{error}</p>}
+      {error && <p style={{ color: "var(--danger)", fontSize: 13, marginTop: 8 }}>{error}</p>}
 
       {loading ? (
         <p style={{ marginTop: 16 }}>불러오는 중...</p>
       ) : chartData.length < 2 ? (
-        <p style={{ color: "#888", marginTop: 16 }}>2번 이상 기록하면 그래프가 나와요.</p>
+        <p style={{ color: "var(--text-muted)", marginTop: 16 }}>2번 이상 기록하면 그래프가 나와요.</p>
       ) : (
         <ResponsiveContainer width="100%" height={220}>
           <LineChart data={chartData}>
-            <CartesianGrid strokeDasharray="3 3" />
-            <XAxis dataKey="date" fontSize={11} />
-            <YAxis fontSize={11} domain={["auto", "auto"]} />
-            <Tooltip />
-            <Line type="monotone" dataKey="weight" stroke="#111" strokeWidth={2} dot={{ r: 3 }} />
+            <CartesianGrid strokeDasharray="3 3" stroke="#3a352f" />
+            <XAxis dataKey="date" fontSize={11} stroke="#a89f92" />
+            <YAxis fontSize={11} domain={["auto", "auto"]} stroke="#a89f92" />
+            <Tooltip contentStyle={tooltipStyle} />
+            <Line type="monotone" dataKey="weight" stroke="#e8825a" strokeWidth={2} dot={{ r: 3 }} />
           </LineChart>
         </ResponsiveContainer>
       )}
 
-      <h2 style={{ fontSize: 16, marginTop: 24 }}>최근 기록</h2>
+      <h2
+        style={{
+          fontSize: 13,
+          marginTop: 24,
+          color: "var(--text-muted)",
+          textTransform: "uppercase",
+          letterSpacing: 0.4,
+        }}
+      >
+        최근 기록
+      </h2>
       {recent.length === 0 ? (
-        <p style={{ color: "#888" }}>아직 기록이 없어요.</p>
+        <p style={{ color: "var(--text-muted)" }}>아직 기록이 없어요.</p>
       ) : (
         recent.map((e) => (
           <div key={e.id} style={{ ...card, display: "flex", justifyContent: "space-between", alignItems: "center" }}>
             <span>{e.date}</span>
             <span>{e.weight}kg</span>
-            <button onClick={() => handleDelete(e.id)} style={{ ...smallBtn, color: "#c00" }}>
+            <button onClick={() => handleDelete(e.id)} style={{ ...smallBtn, color: "var(--danger)" }}>
               삭제
             </button>
           </div>
@@ -120,4 +138,4 @@ export default function WeightPage() {
   );
 }
 
-const labelStyle = { display: "block", fontSize: 12, color: "#666", marginBottom: 4 };
+const labelStyle = { display: "block", fontSize: 12, color: "var(--text-muted)", marginBottom: 4 };

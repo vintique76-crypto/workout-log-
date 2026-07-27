@@ -68,7 +68,7 @@ export default function HistoryPage() {
       {loading ? (
         <p>불러오는 중...</p>
       ) : workouts.length === 0 ? (
-        <p style={{ color: "#888" }}>아직 기록이 없어요.</p>
+        <p style={{ color: "var(--text-muted)" }}>아직 기록이 없어요.</p>
       ) : (
         workouts.map((w) => (
           <div key={w.id} style={card}>
@@ -78,7 +78,9 @@ export default function HistoryPage() {
             >
               <div>
                 <strong>{w.date}</strong>
-                <span style={{ color: "#888", marginLeft: 8, fontSize: 13 }}>{w.routines?.name || "자유 기록"}</span>
+                <span style={{ color: "var(--text-muted)", marginLeft: 8, fontSize: 13 }}>
+                  {w.routines?.name || "자유 기록"}
+                </span>
               </div>
               <div style={{ display: "flex", gap: 6 }}>
                 <Link
@@ -93,7 +95,7 @@ export default function HistoryPage() {
                     e.stopPropagation();
                     handleDelete(w.id);
                   }}
-                  style={{ ...smallBtn, color: "#c00" }}
+                  style={{ ...smallBtn, color: "var(--danger)" }}
                 >
                   삭제
                 </button>
@@ -102,12 +104,12 @@ export default function HistoryPage() {
             {openId === w.id && (
               <div style={{ marginTop: 10, fontSize: 14 }}>
                 {(setsByWorkout[w.id] || []).length === 0 ? (
-                  <p style={{ color: "#888" }}>불러오는 중...</p>
+                  <p style={{ color: "var(--text-muted)" }}>불러오는 중...</p>
                 ) : (
                   Object.entries(grouped(setsByWorkout[w.id])).map(([name, sets]) => (
                     <div key={name} style={{ marginTop: 8 }}>
                       <strong>{name}</strong>
-                      <ul style={{ margin: "4px 0 0", paddingLeft: 18, color: "#555" }}>
+                      <ul style={{ margin: "4px 0 0", paddingLeft: 18, color: "var(--text-muted)" }}>
                         {sets.map((s) => (
                           <li key={s.id}>
                             {s.set_index + 1}세트 · {s.reps}회 · {s.weight}kg

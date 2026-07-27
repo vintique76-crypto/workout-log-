@@ -193,17 +193,27 @@ export default function RoutinesPage() {
         <button type="button" onClick={addExerciseField} style={{ ...smallBtn, alignSelf: "flex-start" }}>
           + 종목 추가
         </button>
-        {error && <p style={{ color: "#c00", fontSize: 13 }}>{error}</p>}
+        {error && <p style={{ color: "var(--danger)", fontSize: 13 }}>{error}</p>}
         <button type="submit" disabled={saving} style={primaryBtn}>
           {saving ? "저장 중..." : "루틴 저장"}
         </button>
       </form>
 
-      <h2 style={{ fontSize: 16, marginTop: 24 }}>내 루틴</h2>
+      <h2
+        style={{
+          fontSize: 13,
+          marginTop: 24,
+          color: "var(--text-muted)",
+          textTransform: "uppercase",
+          letterSpacing: 0.4,
+        }}
+      >
+        내 루틴
+      </h2>
       {loading ? (
         <p>불러오는 중...</p>
       ) : routines.length === 0 ? (
-        <p style={{ color: "#888" }}>아직 만든 루틴이 없어요.</p>
+        <p style={{ color: "var(--text-muted)" }}>아직 만든 루틴이 없어요.</p>
       ) : (
         routines.map((r) =>
           editingId === r.id ? (
@@ -238,7 +248,7 @@ export default function RoutinesPage() {
               <button type="button" onClick={addEditExerciseField} style={{ ...smallBtn, alignSelf: "flex-start" }}>
                 + 종목 추가
               </button>
-              {editError && <p style={{ color: "#c00", fontSize: 13 }}>{editError}</p>}
+              {editError && <p style={{ color: "var(--danger)", fontSize: 13 }}>{editError}</p>}
               <div style={{ display: "flex", gap: 8 }}>
                 <button onClick={() => saveEdit(r.id)} disabled={editSaving} style={{ ...primaryBtn, flex: 1 }}>
                   {editSaving ? "저장 중..." : "저장"}
@@ -256,18 +266,18 @@ export default function RoutinesPage() {
                   <button onClick={() => startEdit(r)} style={smallBtn}>
                     수정
                   </button>
-                  <button onClick={() => handleDelete(r.id)} style={{ ...smallBtn, color: "#c00" }}>
+                  <button onClick={() => handleDelete(r.id)} style={{ ...smallBtn, color: "var(--danger)" }}>
                     삭제
                   </button>
                 </div>
               </div>
-              <ul style={{ margin: "8px 0 0", paddingLeft: 18, color: "#555", fontSize: 14 }}>
+              <ul style={{ margin: "8px 0 0", paddingLeft: 18, color: "var(--text-muted)", fontSize: 14 }}>
                 {[...r.routine_exercises]
                   .sort((a, b) => a.order_index - b.order_index)
                   .map((ex) => (
                     <li key={ex.id}>
                       {ex.name}
-                      {ex.muscle_group && <span style={{ color: "#aaa" }}> · {ex.muscle_group}</span>}
+                      {ex.muscle_group && <span style={{ color: "var(--text-faint)" }}> · {ex.muscle_group}</span>}
                     </li>
                   ))}
               </ul>
