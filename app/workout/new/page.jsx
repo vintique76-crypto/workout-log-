@@ -13,6 +13,8 @@ import RestTimer from "../../../components/RestTimer";
 import MoveIconBadge from "../../../components/MoveIconBadge";
 import ExercisePicker from "../../../components/ExercisePicker";
 import SetTagPicker from "../../../components/SetTagPicker";
+import ShareWorkoutModal from "../../../components/ShareWorkoutModal";
+import { buildShareData } from "../../../lib/shareWorkout";
 
 const stepperBtnStyle = {
   width: 36,
@@ -68,6 +70,7 @@ function NewWorkoutPageInner() {
   const [pickerIndex, setPickerIndex] = useState(null);
   const [tagPicker, setTagPicker] = useState(null);
   const [timerSignal, setTimerSignal] = useState(0);
+  const [shareData, setShareData] = useState(null);
 
   useEffect(() => {
     if (!session) return;
@@ -234,7 +237,18 @@ function NewWorkoutPageInner() {
       const { error: sErr } = await supabase.from("workout_sets").insert(setsToInsert);
       if (sErr) throw sErr;
 
-      router.push("/history");
+      const grouped = {};
+      const order = [];
+      rows.forEach((r) => {
+        if (!grouped[r.exercise_name]) {
+          grouped[r.exercise_name] = [];
+          order.push(r.exercise_name);
+        }
+        grouped[r.exercise_name].push({ reps: r.reps, weight: r.weight });
+      });
+      const exerciseGroups = order.map((name) => ({ name, sets: grouped[name] }));
+      const routine = routines.find((r) => r.id === routineId);
+      setShareData(buildShareData({ date, routineName: routine?.name, exerciseGroups }));
     } catch (err) {
       setError(err.message);
     } finally {
@@ -469,6 +483,15 @@ function NewWorkoutPageInner() {
         tag={activeTagSet?.tag ?? null}
         onChangeRpe={(v) => tagPicker && updateSetRpe(tagPicker.exIdx, tagPicker.setIdx, v)}
         onChangeTag={(v) => tagPicker && updateSetTag(tagPicker.exIdx, tagPicker.setIdx, v)}
+      />
+
+      <ShareWorkoutModal
+        open={shareData !== null}
+        shareData={shareData}
+        onClose={() => {
+          setShareData(null);
+          router.push("/history");
+        }}
       />
     </div>
   );

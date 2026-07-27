@@ -7,6 +7,8 @@ import { useRequireSession } from "../../lib/useSession";
 import { supabase } from "../../lib/supabaseClient";
 import { card, smallBtn } from "../../lib/ui";
 import MoveIconBadge from "../../components/MoveIconBadge";
+import ShareWorkoutModal from "../../components/ShareWorkoutModal";
+import { buildShareData } from "../../lib/shareWorkout";
 
 export default function HistoryPage() {
   const session = useRequireSession();
@@ -14,6 +16,7 @@ export default function HistoryPage() {
   const [loading, setLoading] = useState(true);
   const [openId, setOpenId] = useState(null);
   const [setsByWorkout, setSetsByWorkout] = useState({});
+  const [shareData, setShareData] = useState(null);
 
   const load = async () => {
     setLoading(true);
@@ -64,6 +67,25 @@ export default function HistoryPage() {
     return map;
   };
 
+  const handleShare = async (w) => {
+    let sets = setsByWorkout[w.id];
+    if (!sets) {
+      const { data } = await supabase
+        .from("workout_sets")
+        .select("id, exercise_name, muscle_group, set_index, reps, weight")
+        .eq("workout_id", w.id)
+        .order("exercise_name")
+        .order("set_index");
+      sets = data || [];
+      setSetsByWorkout((prev) => ({ ...prev, [w.id]: sets }));
+    }
+    const exerciseGroups = Object.entries(grouped(sets)).map(([name, s]) => ({
+      name,
+      sets: s.map((x) => ({ reps: x.reps, weight: x.weight })),
+    }));
+    setShareData(buildShareData({ date: w.date, routineName: w.routines?.name, exerciseGroups }));
+  };
+
   return (
     <div>
       <h1 style={{ fontSize: 20 }}>기록 히스토리</h1>
@@ -91,6 +113,15 @@ export default function HistoryPage() {
                 </span>
               </div>
               <div style={{ display: "flex", gap: 6 }}>
+                <button
+                  onClick={(e) => {
+                    e.stopPropagation();
+                    handleShare(w);
+                  }}
+                  style={{ ...smallBtn, color: "var(--accent)" }}
+                >
+                  공유
+                </button>
                 <Link
                   href={`/workout/${w.id}/edit`}
                   onClick={(e) => e.stopPropagation()}
@@ -135,6 +166,8 @@ export default function HistoryPage() {
           </motion.div>
         ))
       )}
+
+      <ShareWorkoutModal open={shareData !== null} shareData={shareData} onClose={() => setShareData(null)} />
     </div>
   );
 }
