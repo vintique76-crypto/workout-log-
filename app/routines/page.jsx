@@ -1,11 +1,13 @@
 "use client";
 
 import { useEffect, useState } from "react";
+import { motion } from "framer-motion";
 import { useRequireSession } from "../../lib/useSession";
 import { useExerciseStats } from "../../lib/useExerciseStats";
 import { supabase } from "../../lib/supabaseClient";
 import { inputStyle, primaryBtn, smallBtn, card } from "../../lib/ui";
 import { MUSCLE_GROUPS } from "../../lib/muscleGroups";
+import MoveIconBadge from "../../components/MoveIconBadge";
 
 function emptyEntry() {
   return { name: "", muscleGroup: "기타" };
@@ -164,7 +166,8 @@ export default function RoutinesPage() {
           style={inputStyle}
         />
         {exercises.map((ex, i) => (
-          <div key={i} style={{ display: "flex", gap: 6 }}>
+          <div key={i} style={{ display: "flex", gap: 6, alignItems: "center" }}>
+            <MoveIconBadge name={ex.name} muscleGroup={ex.muscleGroup} size={32} />
             <input
               placeholder={`운동 종목 ${i + 1} (예: 벤치프레스)`}
               value={ex.name}
@@ -215,12 +218,13 @@ export default function RoutinesPage() {
       ) : routines.length === 0 ? (
         <p style={{ color: "var(--text-muted)" }}>아직 만든 루틴이 없어요.</p>
       ) : (
-        routines.map((r) =>
+        routines.map((r, idx) =>
           editingId === r.id ? (
             <div key={r.id} style={{ ...card, display: "flex", flexDirection: "column", gap: 8 }}>
               <input value={editName} onChange={(e) => setEditName(e.target.value)} style={inputStyle} />
               {editExercises.map((ex, i) => (
-                <div key={i} style={{ display: "flex", gap: 6 }}>
+                <div key={i} style={{ display: "flex", gap: 6, alignItems: "center" }}>
+                  <MoveIconBadge name={ex.name} muscleGroup={ex.muscleGroup} size={32} />
                   <input
                     value={ex.name}
                     onChange={(e) => updateEditExercise(i, "name", e.target.value)}
@@ -259,7 +263,13 @@ export default function RoutinesPage() {
               </div>
             </div>
           ) : (
-            <div key={r.id} style={card}>
+            <motion.div
+              key={r.id}
+              initial={{ opacity: 0, y: 6 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ duration: 0.25, delay: Math.min(idx, 6) * 0.04 }}
+              style={card}
+            >
               <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center" }}>
                 <strong>{r.name}</strong>
                 <div style={{ display: "flex", gap: 6 }}>
@@ -271,17 +281,22 @@ export default function RoutinesPage() {
                   </button>
                 </div>
               </div>
-              <ul style={{ margin: "8px 0 0", paddingLeft: 18, color: "var(--text-muted)", fontSize: 14 }}>
+              <div style={{ marginTop: 10, display: "flex", flexDirection: "column", gap: 8 }}>
                 {[...r.routine_exercises]
                   .sort((a, b) => a.order_index - b.order_index)
                   .map((ex) => (
-                    <li key={ex.id}>
-                      {ex.name}
-                      {ex.muscle_group && <span style={{ color: "var(--text-faint)" }}> · {ex.muscle_group}</span>}
-                    </li>
+                    <div key={ex.id} style={{ display: "flex", alignItems: "center", gap: 10 }}>
+                      <MoveIconBadge name={ex.name} muscleGroup={ex.muscle_group} size={30} />
+                      <span style={{ fontSize: 14 }}>
+                        {ex.name}
+                        {ex.muscle_group && (
+                          <span style={{ color: "var(--text-faint)" }}> · {ex.muscle_group}</span>
+                        )}
+                      </span>
+                    </div>
                   ))}
-              </ul>
-            </div>
+              </div>
+            </motion.div>
           )
         )
       )}

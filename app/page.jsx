@@ -1,12 +1,21 @@
 "use client";
 
 import Link from "next/link";
-import { useEffect, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
+import { motion } from "framer-motion";
 import { useRequireSession } from "../lib/useSession";
 import { supabase } from "../lib/supabaseClient";
 import { primaryBtn, card } from "../lib/ui";
 import { dateStr } from "../lib/date";
 import CalendarHeatmap from "../components/CalendarHeatmap";
+
+const sectionLabel = {
+  fontSize: 13,
+  marginTop: 28,
+  color: "var(--text-muted)",
+  textTransform: "uppercase",
+  letterSpacing: 0.4,
+};
 
 export default function HomePage() {
   const session = useRequireSession();
@@ -46,11 +55,52 @@ export default function HomePage() {
     })();
   }, [session]);
 
+  const weekStats = useMemo(() => {
+    let days = 0;
+    let sets = 0;
+    for (let i = 0; i < 7; i++) {
+      const d = new Date();
+      d.setDate(d.getDate() - i);
+      const count = dateCounts[dateStr(d)] || 0;
+      if (count > 0) days += 1;
+      sets += count;
+    }
+    return { days, sets };
+  }, [dateCounts]);
+
   if (!session) return <p>로딩 중...</p>;
 
   return (
     <div>
-      <h1 style={{ fontSize: 22 }}>오늘도 화이팅</h1>
+      <h1 style={{ fontSize: 24, fontWeight: 800 }}>오늘도 화이팅</h1>
+
+      <div style={{ display: "flex", gap: 10, marginTop: 16 }}>
+        <motion.div
+          initial={{ opacity: 0, y: 8 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ duration: 0.3 }}
+          style={{ ...card, flex: 1, marginTop: 0 }}
+        >
+          <div style={{ fontSize: 12, color: "var(--text-muted)" }}>이번 주 운동</div>
+          <div style={{ fontSize: 28, fontWeight: 800, color: "var(--accent)", marginTop: 4 }}>
+            {weekStats.days}
+            <span style={{ fontSize: 14, color: "var(--text-muted)", fontWeight: 500 }}>일</span>
+          </div>
+        </motion.div>
+        <motion.div
+          initial={{ opacity: 0, y: 8 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ duration: 0.3, delay: 0.05 }}
+          style={{ ...card, flex: 1, marginTop: 0 }}
+        >
+          <div style={{ fontSize: 12, color: "var(--text-muted)" }}>이번 주 세트</div>
+          <div style={{ fontSize: 28, fontWeight: 800, color: "var(--accent)", marginTop: 4 }}>
+            {weekStats.sets}
+            <span style={{ fontSize: 14, color: "var(--text-muted)", fontWeight: 500 }}>개</span>
+          </div>
+        </motion.div>
+      </div>
+
       <Link
         href="/workout/new"
         style={{ ...primaryBtn, display: "block", textAlign: "center", textDecoration: "none", marginTop: 16 }}
@@ -58,30 +108,26 @@ export default function HomePage() {
         오늘 운동 기록하기
       </Link>
 
-      <h2 style={{ fontSize: 13, marginTop: 28, color: "var(--text-muted)", textTransform: "uppercase", letterSpacing: 0.4 }}>최근 90일</h2>
+      <h2 style={sectionLabel}>최근 90일</h2>
       <CalendarHeatmap dateCounts={dateCounts} />
 
-      <h2
-        style={{
-          fontSize: 13,
-          marginTop: 24,
-          color: "var(--text-muted)",
-          textTransform: "uppercase",
-          letterSpacing: 0.4,
-        }}
-      >
-        최근 기록
-      </h2>
+      <h2 style={{ ...sectionLabel, marginTop: 24 }}>최근 기록</h2>
       {loading ? (
         <p>불러오는 중...</p>
       ) : recent.length === 0 ? (
         <p style={{ color: "var(--text-muted)" }}>아직 기록이 없어요. 첫 운동을 기록해보세요.</p>
       ) : (
-        recent.map((w) => (
-          <div key={w.id} style={{ ...card, display: "flex", justifyContent: "space-between" }}>
+        recent.map((w, i) => (
+          <motion.div
+            key={w.id}
+            initial={{ opacity: 0, y: 6 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ duration: 0.25, delay: i * 0.04 }}
+            style={{ ...card, display: "flex", justifyContent: "space-between" }}
+          >
             <span>{w.date}</span>
             <span style={{ color: "var(--text-muted)" }}>{w.routines?.name || "자유 기록"}</span>
-          </div>
+          </motion.div>
         ))
       )}
     </div>

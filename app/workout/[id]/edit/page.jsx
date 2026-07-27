@@ -8,6 +8,7 @@ import { supabase } from "../../../../lib/supabaseClient";
 import { inputStyle, primaryBtn, smallBtn, card } from "../../../../lib/ui";
 import { MUSCLE_GROUPS } from "../../../../lib/muscleGroups";
 import RestTimer from "../../../../components/RestTimer";
+import MoveIconBadge from "../../../../components/MoveIconBadge";
 
 function emptyExercise(name = "", muscleGroup = "기타") {
   return { name, muscleGroup, sets: [{ reps: "", weight: "" }] };
@@ -183,7 +184,8 @@ export default function EditWorkoutPage() {
         const pr = prMap[ex.name.trim()];
         return (
           <div key={exIdx} style={card}>
-            <div style={{ display: "flex", gap: 6 }}>
+            <div style={{ display: "flex", gap: 6, alignItems: "center" }}>
+              <MoveIconBadge name={ex.name} muscleGroup={ex.muscleGroup} />
               <input
                 placeholder="운동 종목 (예: 벤치프레스)"
                 value={ex.name}

@@ -2,9 +2,11 @@
 
 import { useEffect, useState } from "react";
 import Link from "next/link";
+import { motion } from "framer-motion";
 import { useRequireSession } from "../../lib/useSession";
 import { supabase } from "../../lib/supabaseClient";
 import { card, smallBtn } from "../../lib/ui";
+import MoveIconBadge from "../../components/MoveIconBadge";
 
 export default function HistoryPage() {
   const session = useRequireSession();
@@ -39,7 +41,7 @@ export default function HistoryPage() {
     if (!setsByWorkout[id]) {
       const { data } = await supabase
         .from("workout_sets")
-        .select("id, exercise_name, set_index, reps, weight")
+        .select("id, exercise_name, muscle_group, set_index, reps, weight")
         .eq("workout_id", id)
         .order("exercise_name")
         .order("set_index");
@@ -70,8 +72,14 @@ export default function HistoryPage() {
       ) : workouts.length === 0 ? (
         <p style={{ color: "var(--text-muted)" }}>아직 기록이 없어요.</p>
       ) : (
-        workouts.map((w) => (
-          <div key={w.id} style={card}>
+        workouts.map((w, idx) => (
+          <motion.div
+            key={w.id}
+            initial={{ opacity: 0, y: 6 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ duration: 0.25, delay: Math.min(idx, 6) * 0.04 }}
+            style={card}
+          >
             <div
               style={{ display: "flex", justifyContent: "space-between", alignItems: "center", cursor: "pointer" }}
               onClick={() => toggleOpen(w.id)}
@@ -107,21 +115,24 @@ export default function HistoryPage() {
                   <p style={{ color: "var(--text-muted)" }}>불러오는 중...</p>
                 ) : (
                   Object.entries(grouped(setsByWorkout[w.id])).map(([name, sets]) => (
-                    <div key={name} style={{ marginTop: 8 }}>
-                      <strong>{name}</strong>
-                      <ul style={{ margin: "4px 0 0", paddingLeft: 18, color: "var(--text-muted)" }}>
-                        {sets.map((s) => (
-                          <li key={s.id}>
-                            {s.set_index + 1}세트 · {s.reps}회 · {s.weight}kg
-                          </li>
-                        ))}
-                      </ul>
+                    <div key={name} style={{ marginTop: 10, display: "flex", gap: 10 }}>
+                      <MoveIconBadge name={name} muscleGroup={sets[0]?.muscle_group} size={30} />
+                      <div>
+                        <strong>{name}</strong>
+                        <ul style={{ margin: "4px 0 0", paddingLeft: 18, color: "var(--text-muted)" }}>
+                          {sets.map((s) => (
+                            <li key={s.id}>
+                              {s.set_index + 1}세트 · {s.reps}회 · {s.weight}kg
+                            </li>
+                          ))}
+                        </ul>
+                      </div>
                     </div>
                   ))
                 )}
               </div>
             )}
-          </div>
+          </motion.div>
         ))
       )}
     </div>
