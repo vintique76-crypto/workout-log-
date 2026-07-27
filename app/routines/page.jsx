@@ -9,6 +9,7 @@ import { inputStyle, primaryBtn, smallBtn, card } from "../../lib/ui";
 import { MUSCLE_GROUPS } from "../../lib/muscleGroups";
 import MoveIconBadge from "../../components/MoveIconBadge";
 import ExercisePicker from "../../components/ExercisePicker";
+import RoutineTemplatePicker from "../../components/RoutineTemplatePicker";
 
 function emptyEntry() {
   return { name: "", muscleGroup: "기타" };
@@ -30,6 +31,9 @@ export default function RoutinesPage() {
   const [editSaving, setEditSaving] = useState(false);
   const [editError, setEditError] = useState("");
   const [picker, setPicker] = useState(null);
+  const [templatePickerOpen, setTemplatePickerOpen] = useState(false);
+  const [importingId, setImportingId] = useState(null);
+  const [importMessage, setImportMessage] = useState("");
 
   const load = async () => {
     const { data } = await supabase
@@ -95,6 +99,37 @@ export default function RoutinesPage() {
     load();
   };
 
+  const handleImportTemplate = async (template) => {
+    setImportingId(template.id);
+    setImportMessage("");
+    try {
+      for (const r of template.routines) {
+        const { data: routine, error: rErr } = await supabase
+          .from("routines")
+          .insert({ user_id: session.user.id, name: r.name })
+          .select()
+          .single();
+        if (rErr) throw rErr;
+
+        const rows = r.exercises.map((ex, idx) => ({
+          routine_id: routine.id,
+          name: ex.name,
+          muscle_group: ex.muscleGroup,
+          order_index: idx,
+        }));
+        const { error: eErr } = await supabase.from("routine_exercises").insert(rows);
+        if (eErr) throw eErr;
+      }
+      setImportMessage(`"${template.name}" 루틴을 추가했어요.`);
+      setTemplatePickerOpen(false);
+      await load();
+    } catch (err) {
+      setImportMessage(err.message);
+    } finally {
+      setImportingId(null);
+    }
+  };
+
   const startEdit = (r) => {
     setEditingId(r.id);
     setEditName(r.name);
@@ -149,6 +184,20 @@ export default function RoutinesPage() {
   return (
     <div>
       <h1 style={{ fontSize: 20 }}>루틴 관리</h1>
+
+      <button
+        type="button"
+        onClick={() => {
+          setImportMessage("");
+          setTemplatePickerOpen(true);
+        }}
+        style={{ ...smallBtn, marginTop: 10, background: "var(--bg-elevated)" }}
+      >
+        템플릿에서 가져오기
+      </button>
+      {importMessage && (
+        <p style={{ fontSize: 13, color: "var(--text-muted)", marginTop: 6 }}>{importMessage}</p>
+      )}
 
       <datalist id="exercise-names">
         {exerciseNames.map((n) => (
@@ -321,6 +370,13 @@ export default function RoutinesPage() {
             updateEditExercise(picker.index, "muscleGroup", ex.muscleGroup);
           }
         }}
+      />
+
+      <RoutineTemplatePicker
+        open={templatePickerOpen}
+        onClose={() => setTemplatePickerOpen(false)}
+        onImport={handleImportTemplate}
+        importingId={importingId}
       />
     </div>
   );

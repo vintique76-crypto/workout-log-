@@ -9,6 +9,7 @@ import { primaryBtn, card } from "../lib/ui";
 import { dateStr } from "../lib/date";
 import { computeInsights } from "../lib/insights";
 import CalendarHeatmap from "../components/CalendarHeatmap";
+import WorkoutCharacter from "../components/WorkoutCharacter";
 
 const sectionLabel = {
   fontSize: 13,
@@ -80,13 +81,24 @@ export default function HomePage() {
     return { days, sets };
   }, [dateCounts]);
 
+  const activeDays90 = useMemo(() => Object.keys(dateCounts).length, [dateCounts]);
+
   if (!session) return <p>로딩 중...</p>;
 
   return (
     <div>
       <h1 style={{ fontSize: 24, fontWeight: 800 }}>오늘도 화이팅</h1>
 
-      <div style={{ display: "flex", gap: 10, marginTop: 16 }}>
+      <motion.div
+        initial={{ opacity: 0, y: 8 }}
+        animate={{ opacity: 1, y: 0 }}
+        transition={{ duration: 0.3 }}
+        style={{ ...card, marginTop: 14 }}
+      >
+        <WorkoutCharacter days={activeDays90} />
+      </motion.div>
+
+      <div style={{ display: "flex", gap: 10, marginTop: 10 }}>
         <motion.div
           initial={{ opacity: 0, y: 8 }}
           animate={{ opacity: 1, y: 0 }}

@@ -1,7 +1,7 @@
 "use client";
 
 import { useState } from "react";
-import { AnimatePresence, motion } from "framer-motion";
+import { motion } from "framer-motion";
 import { EXERCISE_LIBRARY } from "../lib/exerciseLibrary";
 import { MUSCLE_GROUPS } from "../lib/muscleGroups";
 import { MOVEMENT_ICONS } from "./movementIcons";
@@ -21,28 +21,24 @@ export default function ExercisePicker({ open, onClose, onSelect }) {
     onClose();
   };
 
+  if (!open) return null;
+
   return (
-    <AnimatePresence>
-      {open && (
-        <>
-          <motion.div
-            initial={{ opacity: 0 }}
-            animate={{ opacity: 1 }}
-            exit={{ opacity: 0 }}
-            onClick={onClose}
-            style={{
-              position: "fixed",
-              inset: 0,
-              background: "rgba(0,0,0,0.55)",
-              zIndex: 50,
-            }}
-          />
-          <motion.div
-            initial={{ y: "100%" }}
-            animate={{ y: 0 }}
-            exit={{ y: "100%" }}
-            transition={{ type: "spring", damping: 30, stiffness: 300 }}
-            style={{
+    <>
+      <div
+        onClick={onClose}
+        style={{
+          position: "fixed",
+          inset: 0,
+          background: "rgba(0,0,0,0.55)",
+          zIndex: 50,
+        }}
+      />
+      <motion.div
+        initial={{ y: "100%" }}
+        animate={{ y: 0 }}
+        transition={{ type: "spring", damping: 30, stiffness: 300 }}
+        style={{
               position: "fixed",
               left: 0,
               right: 0,
@@ -154,9 +150,7 @@ export default function ExercisePicker({ open, onClose, onSelect }) {
                 </div>
               ))}
             </div>
-          </motion.div>
-        </>
-      )}
-    </AnimatePresence>
+      </motion.div>
+    </>
   );
 }
