@@ -3,8 +3,10 @@
 import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
 import { useRequireSession } from "../../../lib/useSession";
+import { useExerciseStats } from "../../../lib/useExerciseStats";
 import { supabase } from "../../../lib/supabaseClient";
 import { inputStyle, primaryBtn, smallBtn, card } from "../../../lib/ui";
+import RestTimer from "../../../components/RestTimer";
 
 function todayStr() {
   const d = new Date();
@@ -20,6 +22,7 @@ function emptyExercise(name = "") {
 export default function NewWorkoutPage() {
   const session = useRequireSession();
   const router = useRouter();
+  const { names: exerciseNames, prMap } = useExerciseStats(session);
   const [routines, setRoutines] = useState([]);
   const [routineId, setRoutineId] = useState("");
   const [date, setDate] = useState(todayStr());
@@ -138,54 +141,74 @@ export default function NewWorkoutPage() {
         </select>
       </div>
 
-      {exercises.map((ex, exIdx) => (
-        <div key={exIdx} style={card}>
-          <div style={{ display: "flex", gap: 6 }}>
-            <input
-              placeholder="운동 종목 (예: 벤치프레스)"
-              value={ex.name}
-              onChange={(e) => updateExerciseName(exIdx, e.target.value)}
-              style={{ ...inputStyle, flex: 1 }}
-            />
-            {exercises.length > 1 && (
-              <button onClick={() => removeExercise(exIdx)} style={smallBtn}>
-                종목 삭제
-              </button>
-            )}
-          </div>
+      <RestTimer />
 
-          <div style={{ marginTop: 10 }}>
-            {ex.sets.map((s, setIdx) => (
-              <div key={setIdx} style={{ display: "flex", gap: 6, alignItems: "center", marginTop: 6 }}>
-                <span style={{ width: 40, fontSize: 13, color: "#888" }}>{setIdx + 1}세트</span>
-                <input
-                  type="number"
-                  placeholder="횟수"
-                  value={s.reps}
-                  onChange={(e) => updateSet(exIdx, setIdx, "reps", e.target.value)}
-                  style={{ ...inputStyle, flex: 1 }}
-                />
-                <input
-                  type="number"
-                  step="0.5"
-                  placeholder="무게(kg)"
-                  value={s.weight}
-                  onChange={(e) => updateSet(exIdx, setIdx, "weight", e.target.value)}
-                  style={{ ...inputStyle, flex: 1 }}
-                />
-                {ex.sets.length > 1 && (
-                  <button onClick={() => removeSet(exIdx, setIdx)} style={smallBtn}>
-                    X
-                  </button>
-                )}
-              </div>
-            ))}
-            <button onClick={() => addSet(exIdx)} style={{ ...smallBtn, marginTop: 8 }}>
-              + 세트 추가
-            </button>
+      <datalist id="exercise-names">
+        {exerciseNames.map((n) => (
+          <option key={n} value={n} />
+        ))}
+      </datalist>
+
+      {exercises.map((ex, exIdx) => {
+        const pr = prMap[ex.name.trim()];
+        return (
+          <div key={exIdx} style={card}>
+            <div style={{ display: "flex", gap: 6 }}>
+              <input
+                placeholder="운동 종목 (예: 벤치프레스)"
+                value={ex.name}
+                onChange={(e) => updateExerciseName(exIdx, e.target.value)}
+                list="exercise-names"
+                style={{ ...inputStyle, flex: 1 }}
+              />
+              {exercises.length > 1 && (
+                <button onClick={() => removeExercise(exIdx)} style={smallBtn}>
+                  종목 삭제
+                </button>
+              )}
+            </div>
+
+            {pr !== undefined && (
+              <p style={{ fontSize: 12, color: "#888", margin: "6px 0 0" }}>개인 최고 기록: {pr}kg</p>
+            )}
+
+            <div style={{ marginTop: 10 }}>
+              {ex.sets.map((s, setIdx) => {
+                const isNewPR = pr !== undefined && s.weight !== "" && Number(s.weight) > pr;
+                return (
+                  <div key={setIdx} style={{ display: "flex", gap: 6, alignItems: "center", marginTop: 6 }}>
+                    <span style={{ width: 40, fontSize: 13, color: "#888" }}>{setIdx + 1}세트</span>
+                    <input
+                      type="number"
+                      placeholder="횟수"
+                      value={s.reps}
+                      onChange={(e) => updateSet(exIdx, setIdx, "reps", e.target.value)}
+                      style={{ ...inputStyle, flex: 1 }}
+                    />
+                    <input
+                      type="number"
+                      step="0.5"
+                      placeholder="무게(kg)"
+                      value={s.weight}
+                      onChange={(e) => updateSet(exIdx, setIdx, "weight", e.target.value)}
+                      style={{ ...inputStyle, flex: 1, borderColor: isNewPR ? "#0a0" : undefined }}
+                    />
+                    {isNewPR && <span style={{ fontSize: 12, color: "#0a0", whiteSpace: "nowrap" }}>신기록!</span>}
+                    {ex.sets.length > 1 && (
+                      <button onClick={() => removeSet(exIdx, setIdx)} style={smallBtn}>
+                        X
+                      </button>
+                    )}
+                  </div>
+                );
+              })}
+              <button onClick={() => addSet(exIdx)} style={{ ...smallBtn, marginTop: 8 }}>
+                + 세트 추가
+              </button>
+            </div>
           </div>
-        </div>
-      ))}
+        );
+      })}
 
       <button onClick={addExercise} style={{ ...smallBtn, marginTop: 12 }}>
         + 종목 추가
