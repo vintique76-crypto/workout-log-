@@ -7,6 +7,7 @@ import { useRequireSession } from "../lib/useSession";
 import { supabase } from "../lib/supabaseClient";
 import { primaryBtn, card } from "../lib/ui";
 import { dateStr } from "../lib/date";
+import { computeInsights } from "../lib/insights";
 import CalendarHeatmap from "../components/CalendarHeatmap";
 
 const sectionLabel = {
@@ -21,6 +22,7 @@ export default function HomePage() {
   const session = useRequireSession();
   const [recent, setRecent] = useState([]);
   const [dateCounts, setDateCounts] = useState({});
+  const [topInsight, setTopInsight] = useState(null);
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
@@ -38,19 +40,29 @@ export default function HomePage() {
           .limit(5),
         supabase
           .from("workout_sets")
-          .select("workouts!inner(date)")
+          .select("exercise_name, muscle_group, weight, reps, workouts!inner(date)")
           .gte("workouts.date", dateStr(from)),
       ]);
 
       setRecent(recentData || []);
 
       const counts = {};
+      const sets = [];
       (setsData || []).forEach((r) => {
         const d = r.workouts?.date;
         if (!d) return;
         counts[d] = (counts[d] || 0) + 1;
+        sets.push({
+          exercise_name: r.exercise_name,
+          muscle_group: r.muscle_group || "기타",
+          weight: r.weight,
+          reps: r.reps,
+          date: d,
+        });
       });
       setDateCounts(counts);
+      const insights = computeInsights({ sets });
+      setTopInsight(insights[0] || null);
       setLoading(false);
     })();
   }, [session]);
@@ -107,6 +119,23 @@ export default function HomePage() {
       >
         오늘 운동 기록하기
       </Link>
+
+      {topInsight && (
+        <Link href="/coach" style={{ textDecoration: "none", color: "inherit", display: "block" }}>
+          <motion.div
+            initial={{ opacity: 0, y: 8 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ duration: 0.3, delay: 0.1 }}
+            style={{
+              ...card,
+              borderLeft: `3px solid ${topInsight.tone === "positive" ? "var(--success)" : "var(--accent)"}`,
+            }}
+          >
+            <div style={{ fontSize: 11, color: "var(--text-muted)", marginBottom: 4 }}>코칭</div>
+            <p style={{ margin: 0, fontSize: 14, lineHeight: 1.5 }}>{topInsight.message}</p>
+          </motion.div>
+        </Link>
+      )}
 
       <h2 style={sectionLabel}>최근 90일</h2>
       <CalendarHeatmap dateCounts={dateCounts} />

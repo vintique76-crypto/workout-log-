@@ -115,3 +115,12 @@ export function TrashIcon(props) {
     </Svg>
   );
 }
+
+export function SparkleIcon(props) {
+  return (
+    <Svg {...props}>
+      <path d="M12 3v4M12 17v4M3 12h4M17 12h4" />
+      <path d="M7 7l2 2M15 15l2 2M17 7l-2 2M9 15l-2 2" />
+    </Svg>
+  );
+}
