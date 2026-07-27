@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect, useState } from "react";
+import Link from "next/link";
 import { useRequireSession } from "../../lib/useSession";
 import { supabase } from "../../lib/supabaseClient";
 import { card, smallBtn } from "../../lib/ui";
@@ -79,15 +80,24 @@ export default function HistoryPage() {
                 <strong>{w.date}</strong>
                 <span style={{ color: "#888", marginLeft: 8, fontSize: 13 }}>{w.routines?.name || "자유 기록"}</span>
               </div>
-              <button
-                onClick={(e) => {
-                  e.stopPropagation();
-                  handleDelete(w.id);
-                }}
-                style={{ ...smallBtn, color: "#c00" }}
-              >
-                삭제
-              </button>
+              <div style={{ display: "flex", gap: 6 }}>
+                <Link
+                  href={`/workout/${w.id}/edit`}
+                  onClick={(e) => e.stopPropagation()}
+                  style={{ ...smallBtn, textDecoration: "none", display: "inline-block" }}
+                >
+                  수정
+                </Link>
+                <button
+                  onClick={(e) => {
+                    e.stopPropagation();
+                    handleDelete(w.id);
+                  }}
+                  style={{ ...smallBtn, color: "#c00" }}
+                >
+                  삭제
+                </button>
+              </div>
             </div>
             {openId === w.id && (
               <div style={{ marginTop: 10, fontSize: 14 }}>
