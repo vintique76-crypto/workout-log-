@@ -32,6 +32,8 @@ create table workout_sets (
   reps int not null,
   weight numeric not null,
   muscle_group text,
+  rpe int,
+  tag text,
   created_at timestamptz not null default now()
 );
 

@@ -24,6 +24,7 @@ export default function HomePage() {
   const [recent, setRecent] = useState([]);
   const [dateCounts, setDateCounts] = useState({});
   const [topInsight, setTopInsight] = useState(null);
+  const [recommendedRoutine, setRecommendedRoutine] = useState(null);
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
@@ -32,20 +33,39 @@ export default function HomePage() {
       const from = new Date();
       from.setDate(from.getDate() - 90);
 
-      const [{ data: recentData }, { data: setsData }] = await Promise.all([
-        supabase
-          .from("workouts")
-          .select("id, date, routines(name)")
-          .order("date", { ascending: false })
-          .order("created_at", { ascending: false })
-          .limit(5),
-        supabase
-          .from("workout_sets")
-          .select("exercise_name, muscle_group, weight, reps, workouts!inner(date)")
-          .gte("workouts.date", dateStr(from)),
-      ]);
+      const [{ data: recentData }, { data: setsData }, { data: routinesData }, { data: allWorkouts }] =
+        await Promise.all([
+          supabase
+            .from("workouts")
+            .select("id, date, routines(name)")
+            .order("date", { ascending: false })
+            .order("created_at", { ascending: false })
+            .limit(5),
+          supabase
+            .from("workout_sets")
+            .select("exercise_name, muscle_group, weight, reps, workouts!inner(date)")
+            .gte("workouts.date", dateStr(from)),
+          supabase.from("routines").select("id, name"),
+          supabase.from("workouts").select("routine_id, date"),
+        ]);
 
       setRecent(recentData || []);
+
+      if ((routinesData || []).length > 0) {
+        const lastUsedByRoutine = {};
+        (allWorkouts || []).forEach((w) => {
+          if (!w.routine_id) return;
+          if (!lastUsedByRoutine[w.routine_id] || w.date > lastUsedByRoutine[w.routine_id]) {
+            lastUsedByRoutine[w.routine_id] = w.date;
+          }
+        });
+        const sorted = [...routinesData].sort((a, b) => {
+          const da = lastUsedByRoutine[a.id] || "";
+          const db = lastUsedByRoutine[b.id] || "";
+          return da.localeCompare(db);
+        });
+        setRecommendedRoutine(sorted[0]);
+      }
 
       const counts = {};
       const sets = [];
@@ -125,12 +145,32 @@ export default function HomePage() {
         </motion.div>
       </div>
 
-      <Link
-        href="/workout/new"
-        style={{ ...primaryBtn, display: "block", textAlign: "center", textDecoration: "none", marginTop: 16 }}
-      >
-        오늘 운동 기록하기
-      </Link>
+      {recommendedRoutine ? (
+        <motion.div
+          initial={{ opacity: 0, y: 8 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ duration: 0.3, delay: 0.08 }}
+          style={{ ...card, display: "flex", justifyContent: "space-between", alignItems: "center" }}
+        >
+          <div>
+            <div style={{ fontSize: 11, color: "var(--text-muted)" }}>오늘의 추천 루틴</div>
+            <div style={{ fontWeight: 700, fontSize: 16, marginTop: 2 }}>{recommendedRoutine.name}</div>
+          </div>
+          <Link
+            href={`/workout/new?routine=${recommendedRoutine.id}`}
+            style={{ ...primaryBtn, textDecoration: "none", padding: "10px 16px" }}
+          >
+            시작
+          </Link>
+        </motion.div>
+      ) : (
+        <Link
+          href="/workout/new"
+          style={{ ...primaryBtn, display: "block", textAlign: "center", textDecoration: "none", marginTop: 16 }}
+        >
+          오늘 운동 기록하기
+        </Link>
+      )}
 
       {topInsight && (
         <Link href="/coach" style={{ textDecoration: "none", color: "inherit", display: "block" }}>

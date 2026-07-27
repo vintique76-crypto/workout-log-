@@ -4,15 +4,44 @@ import { useEffect, useState } from "react";
 import { useParams, useRouter } from "next/navigation";
 import { useRequireSession } from "../../../../lib/useSession";
 import { useExerciseStats } from "../../../../lib/useExerciseStats";
+import { useLastSessionSets } from "../../../../lib/useLastSessionSets";
 import { supabase } from "../../../../lib/supabaseClient";
 import { inputStyle, primaryBtn, smallBtn, card } from "../../../../lib/ui";
 import { MUSCLE_GROUPS } from "../../../../lib/muscleGroups";
 import RestTimer from "../../../../components/RestTimer";
 import MoveIconBadge from "../../../../components/MoveIconBadge";
 import ExercisePicker from "../../../../components/ExercisePicker";
+import SetTagPicker from "../../../../components/SetTagPicker";
+
+const stepperBtnStyle = {
+  width: 36,
+  height: 40,
+  borderRadius: 8,
+  border: "1px solid var(--border)",
+  background: "var(--bg-elevated-2)",
+  color: "var(--text)",
+  fontSize: 18,
+  fontWeight: 700,
+  cursor: "pointer",
+  flexShrink: 0,
+};
+
+const smallIconBtn = {
+  padding: "4px 8px",
+  borderRadius: 8,
+  border: "1px solid var(--border)",
+  background: "var(--bg-elevated)",
+  color: "var(--text-muted)",
+  fontSize: 12,
+  cursor: "pointer",
+};
+
+function emptySet() {
+  return { reps: "", weight: "", completed: false, rpe: null, tag: null };
+}
 
 function emptyExercise(name = "", muscleGroup = "기타") {
-  return { name, muscleGroup, sets: [{ reps: "", weight: "" }] };
+  return { name, muscleGroup, sets: [emptySet()] };
 }
 
 export default function EditWorkoutPage() {
@@ -20,6 +49,7 @@ export default function EditWorkoutPage() {
   const session = useRequireSession();
   const router = useRouter();
   const { names: exerciseNames, prMap } = useExerciseStats(session);
+  const { lastSessionMap } = useLastSessionSets(session);
   const [routines, setRoutines] = useState([]);
   const [routineId, setRoutineId] = useState("");
   const [date, setDate] = useState("");
@@ -28,6 +58,8 @@ export default function EditWorkoutPage() {
   const [saving, setSaving] = useState(false);
   const [error, setError] = useState("");
   const [pickerIndex, setPickerIndex] = useState(null);
+  const [tagPicker, setTagPicker] = useState(null);
+  const [timerSignal, setTimerSignal] = useState(0);
 
   useEffect(() => {
     if (!session) return;
@@ -40,7 +72,7 @@ export default function EditWorkoutPage() {
         supabase.from("workouts").select("id, date, routine_id").eq("id", id).single(),
         supabase
           .from("workout_sets")
-          .select("exercise_name, muscle_group, set_index, reps, weight")
+          .select("exercise_name, muscle_group, set_index, reps, weight, rpe, tag")
           .eq("workout_id", id)
           .order("set_index"),
       ]);
@@ -58,7 +90,13 @@ export default function EditWorkoutPage() {
           map[s.exercise_name] = { name: s.exercise_name, muscleGroup: s.muscle_group || "기타", sets: [] };
           order.push(s.exercise_name);
         }
-        map[s.exercise_name].sets.push({ reps: String(s.reps), weight: String(s.weight) });
+        map[s.exercise_name].sets.push({
+          reps: String(s.reps),
+          weight: String(s.weight),
+          completed: true,
+          rpe: s.rpe ?? null,
+          tag: s.tag ?? null,
+        });
       });
       const grouped = order.map((n) => map[n]);
       setExercises(grouped.length ? grouped : [emptyExercise()]);
@@ -90,21 +128,82 @@ export default function EditWorkoutPage() {
   const removeExercise = (i) => setExercises(exercises.filter((_, idx) => idx !== i));
 
   const addSet = (exIdx) => {
-    const next = [...exercises];
-    next[exIdx] = { ...next[exIdx], sets: [...next[exIdx].sets, { reps: "", weight: "" }] };
-    setExercises(next);
+    setExercises((prev) =>
+      prev.map((ex, i) => (i === exIdx ? { ...ex, sets: [...ex.sets, emptySet()] } : ex))
+    );
   };
   const removeSet = (exIdx, setIdx) => {
-    const next = [...exercises];
-    next[exIdx] = { ...next[exIdx], sets: next[exIdx].sets.filter((_, i) => i !== setIdx) };
-    setExercises(next);
+    setExercises((prev) =>
+      prev.map((ex, i) => (i === exIdx ? { ...ex, sets: ex.sets.filter((_, j) => j !== setIdx) } : ex))
+    );
   };
   const updateSet = (exIdx, setIdx, field, value) => {
-    const next = [...exercises];
-    const sets = [...next[exIdx].sets];
-    sets[setIdx] = { ...sets[setIdx], [field]: value };
-    next[exIdx] = { ...next[exIdx], sets };
-    setExercises(next);
+    setExercises((prev) =>
+      prev.map((ex, i) =>
+        i === exIdx
+          ? { ...ex, sets: ex.sets.map((s, j) => (j === setIdx ? { ...s, [field]: value } : s)) }
+          : ex
+      )
+    );
+  };
+
+  const stepSet = (exIdx, setIdx, field, delta) => {
+    setExercises((prev) =>
+      prev.map((ex, i) => {
+        if (i !== exIdx) return ex;
+        const ghost = lastSessionMap[ex.name.trim()]?.[setIdx];
+        const sets = ex.sets.map((s, j) => {
+          if (j !== setIdx) return s;
+          const raw = s[field];
+          const base = raw !== "" ? Number(raw) : ghost ? Number(ghost[field]) : 0;
+          let next = base + delta;
+          if (next < 0) next = 0;
+          next = Math.round(next * 10) / 10;
+          return { ...s, [field]: String(next) };
+        });
+        return { ...ex, sets };
+      })
+    );
+  };
+
+  const toggleComplete = (exIdx, setIdx) => {
+    const ex = exercises[exIdx];
+    const current = ex.sets[setIdx];
+    const willComplete = !current.completed;
+    const ghost = lastSessionMap[ex.name.trim()]?.[setIdx];
+
+    setExercises((prev) =>
+      prev.map((e, i) => {
+        if (i !== exIdx) return e;
+        const sets = e.sets.map((s, j) => {
+          if (j !== setIdx) return s;
+          const reps = s.reps !== "" ? s.reps : willComplete && ghost ? String(ghost.reps) : s.reps;
+          const weight = s.weight !== "" ? s.weight : willComplete && ghost ? String(ghost.weight) : s.weight;
+          return { ...s, reps, weight, completed: willComplete };
+        });
+        return { ...e, sets };
+      })
+    );
+
+    if (willComplete) {
+      if (typeof navigator !== "undefined" && navigator.vibrate) navigator.vibrate(25);
+      setTimerSignal((t) => t + 1);
+    }
+  };
+
+  const updateSetRpe = (exIdx, setIdx, value) => {
+    setExercises((prev) =>
+      prev.map((e, i) =>
+        i === exIdx ? { ...e, sets: e.sets.map((s, j) => (j === setIdx ? { ...s, rpe: value } : s)) } : e
+      )
+    );
+  };
+  const updateSetTag = (exIdx, setIdx, value) => {
+    setExercises((prev) =>
+      prev.map((e, i) =>
+        i === exIdx ? { ...e, sets: e.sets.map((s, j) => (j === setIdx ? { ...s, tag: value } : s)) } : e
+      )
+    );
   };
 
   const handleSave = async () => {
@@ -121,6 +220,8 @@ export default function EditWorkoutPage() {
           set_index: idx,
           reps: Number(s.reps),
           weight: Number(s.weight),
+          rpe: s.rpe,
+          tag: s.tag,
         });
       });
     });
@@ -151,6 +252,9 @@ export default function EditWorkoutPage() {
     }
   };
 
+  const activeTagSet =
+    tagPicker !== null ? exercises[tagPicker.exIdx]?.sets[tagPicker.setIdx] : null;
+
   return (
     <div>
       <h1 style={{ fontSize: 20 }}>운동 기록 수정</h1>
@@ -170,7 +274,7 @@ export default function EditWorkoutPage() {
         </select>
       </div>
 
-      <RestTimer />
+      <RestTimer autoStartSignal={timerSignal} />
 
       <datalist id="exercise-names">
         {exerciseNames.map((n) => (
@@ -180,6 +284,7 @@ export default function EditWorkoutPage() {
 
       {exercises.map((ex, exIdx) => {
         const pr = prMap[ex.name.trim()];
+        const ghostSets = lastSessionMap[ex.name.trim()];
         return (
           <div key={exIdx} style={card}>
             <div style={{ display: "flex", gap: 6, alignItems: "center" }}>
@@ -212,40 +317,132 @@ export default function EditWorkoutPage() {
             {pr !== undefined && (
               <p style={{ fontSize: 12, color: "var(--text-muted)", margin: "6px 0 0" }}>개인 최고 기록: {pr}kg</p>
             )}
+            {ghostSets && (
+              <p style={{ fontSize: 12, color: "var(--text-faint)", margin: "4px 0 0" }}>
+                지난 세션: {ghostSets.filter(Boolean).map((g) => `${g.weight}kg×${g.reps}`).join(", ")}
+              </p>
+            )}
 
-            <div style={{ marginTop: 10 }}>
+            <div style={{ marginTop: 10, display: "flex", flexDirection: "column", gap: 8 }}>
               {ex.sets.map((s, setIdx) => {
+                const ghost = ghostSets?.[setIdx];
                 const isNewPR = pr !== undefined && s.weight !== "" && Number(s.weight) > pr;
                 return (
-                  <div key={setIdx} style={{ display: "flex", gap: 6, alignItems: "center", marginTop: 6 }}>
-                    <span style={{ width: 40, fontSize: 13, color: "var(--text-muted)" }}>{setIdx + 1}세트</span>
-                    <input
-                      type="number"
-                      placeholder="횟수"
-                      value={s.reps}
-                      onChange={(e) => updateSet(exIdx, setIdx, "reps", e.target.value)}
-                      style={{ ...inputStyle, flex: 1 }}
-                    />
-                    <input
-                      type="number"
-                      step="0.5"
-                      placeholder="무게(kg)"
-                      value={s.weight}
-                      onChange={(e) => updateSet(exIdx, setIdx, "weight", e.target.value)}
-                      style={{ ...inputStyle, flex: 1, borderColor: isNewPR ? "var(--success)" : undefined }}
-                    />
-                    {isNewPR && (
-                      <span style={{ fontSize: 12, color: "var(--success)", whiteSpace: "nowrap" }}>신기록!</span>
-                    )}
-                    {ex.sets.length > 1 && (
-                      <button onClick={() => removeSet(exIdx, setIdx)} style={smallBtn}>
-                        X
+                  <div
+                    key={setIdx}
+                    style={{
+                      background: "var(--bg-elevated-2)",
+                      borderRadius: 10,
+                      padding: 10,
+                    }}
+                  >
+                    <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center" }}>
+                      <span style={{ fontSize: 13, color: "var(--text-muted)", fontWeight: 600 }}>
+                        {setIdx + 1}세트
+                        {s.tag && (
+                          <span style={{ marginLeft: 6, color: "var(--accent)" }}>
+                            {s.tag === "failure" ? "실패" : s.tag === "dropset" ? "드롭세트" : "보조"}
+                          </span>
+                        )}
+                      </span>
+                      <div style={{ display: "flex", gap: 6 }}>
+                        <button
+                          type="button"
+                          onClick={() => setTagPicker({ exIdx, setIdx })}
+                          style={smallIconBtn}
+                        >
+                          {s.rpe ? `RPE ${s.rpe}` : "RPE"}
+                        </button>
+                        {ex.sets.length > 1 && (
+                          <button type="button" onClick={() => removeSet(exIdx, setIdx)} style={smallIconBtn}>
+                            삭제
+                          </button>
+                        )}
+                      </div>
+                    </div>
+
+                    <div style={{ display: "flex", alignItems: "center", gap: 6, marginTop: 8 }}>
+                      <button
+                        type="button"
+                        onClick={() => stepSet(exIdx, setIdx, "weight", -2.5)}
+                        style={stepperBtnStyle}
+                      >
+                        −
                       </button>
+                      <input
+                        type="number"
+                        step="0.5"
+                        placeholder={ghost ? String(ghost.weight) : "무게"}
+                        value={s.weight}
+                        onChange={(e) => updateSet(exIdx, setIdx, "weight", e.target.value)}
+                        style={{
+                          ...inputStyle,
+                          flex: 1,
+                          textAlign: "center",
+                          borderColor: isNewPR ? "var(--success)" : undefined,
+                        }}
+                      />
+                      <button
+                        type="button"
+                        onClick={() => stepSet(exIdx, setIdx, "weight", 2.5)}
+                        style={stepperBtnStyle}
+                      >
+                        +
+                      </button>
+                      <span style={{ fontSize: 12, color: "var(--text-muted)", width: 20 }}>kg</span>
+                    </div>
+
+                    <div style={{ display: "flex", alignItems: "center", gap: 6, marginTop: 6 }}>
+                      <button
+                        type="button"
+                        onClick={() => stepSet(exIdx, setIdx, "reps", -1)}
+                        style={stepperBtnStyle}
+                      >
+                        −
+                      </button>
+                      <input
+                        type="number"
+                        placeholder={ghost ? String(ghost.reps) : "횟수"}
+                        value={s.reps}
+                        onChange={(e) => updateSet(exIdx, setIdx, "reps", e.target.value)}
+                        style={{ ...inputStyle, flex: 1, textAlign: "center" }}
+                      />
+                      <button
+                        type="button"
+                        onClick={() => stepSet(exIdx, setIdx, "reps", 1)}
+                        style={stepperBtnStyle}
+                      >
+                        +
+                      </button>
+                      <span style={{ fontSize: 12, color: "var(--text-muted)", width: 20 }}>회</span>
+                    </div>
+
+                    {isNewPR && (
+                      <p style={{ fontSize: 12, color: "var(--success)", margin: "6px 0 0" }}>신기록!</p>
                     )}
+
+                    <button
+                      type="button"
+                      onClick={() => toggleComplete(exIdx, setIdx)}
+                      style={{
+                        width: "100%",
+                        marginTop: 8,
+                        padding: 10,
+                        borderRadius: 8,
+                        border: "none",
+                        cursor: "pointer",
+                        fontWeight: 700,
+                        fontSize: 14,
+                        background: s.completed ? "var(--success)" : "var(--bg-elevated)",
+                        color: s.completed ? "#16210f" : "var(--text-muted)",
+                      }}
+                    >
+                      {s.completed ? "완료" : "완료로 표시"}
+                    </button>
                   </div>
                 );
               })}
-              <button onClick={() => addSet(exIdx)} style={{ ...smallBtn, marginTop: 8 }}>
+              <button onClick={() => addSet(exIdx)} style={smallBtn}>
                 + 세트 추가
               </button>
             </div>
@@ -267,9 +464,21 @@ export default function EditWorkoutPage() {
         open={pickerIndex !== null}
         onClose={() => setPickerIndex(null)}
         onSelect={(ex) => {
-          updateExerciseName(pickerIndex, ex.name);
-          updateExerciseMuscleGroup(pickerIndex, ex.muscleGroup);
+          setExercises((prev) =>
+            prev.map((e, idx) =>
+              idx === pickerIndex ? { ...e, name: ex.name, muscleGroup: ex.muscleGroup } : e
+            )
+          );
         }}
+      />
+
+      <SetTagPicker
+        open={tagPicker !== null}
+        onClose={() => setTagPicker(null)}
+        rpe={activeTagSet?.rpe ?? null}
+        tag={activeTagSet?.tag ?? null}
+        onChangeRpe={(v) => tagPicker && updateSetRpe(tagPicker.exIdx, tagPicker.setIdx, v)}
+        onChangeTag={(v) => tagPicker && updateSetTag(tagPicker.exIdx, tagPicker.setIdx, v)}
       />
     </div>
   );
