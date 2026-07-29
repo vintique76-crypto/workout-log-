@@ -6,13 +6,14 @@ import { motion } from "framer-motion";
 import { useRequireSession } from "../lib/useSession";
 import { supabase } from "../lib/supabaseClient";
 import { primaryBtn, card } from "../lib/ui";
-import { dateStr } from "../lib/date";
+import { dateStr, formatDuration } from "../lib/date";
 import { computeInsights } from "../lib/insights";
 import WorkoutCharacter from "../components/WorkoutCharacter";
 import GoalProgress from "../components/GoalProgress";
 import InsightIcon from "../components/InsightIcon";
 import WeeklyActivityBars from "../components/WeeklyActivityBars";
 import EmptyState from "../components/EmptyState";
+import WeeklyReportModal from "../components/WeeklyReportModal";
 
 const sectionLabel = {
   fontSize: 13,
@@ -31,6 +32,8 @@ export default function HomePage() {
   const [loading, setLoading] = useState(true);
   const [goal, setGoal] = useState(null);
   const [bodyEntries, setBodyEntries] = useState([]);
+  const [recentWorkouts, setRecentWorkouts] = useState([]);
+  const [reportData, setReportData] = useState(null);
 
   useEffect(() => {
     if (!session) return;
@@ -51,7 +54,7 @@ export default function HomePage() {
             .select("exercise_name, muscle_group, weight, reps, workouts!inner(date)")
             .gte("workouts.date", dateStr(from)),
           supabase.from("routines").select("id, name"),
-          supabase.from("workouts").select("routine_id, date"),
+          supabase.from("workouts").select("routine_id, date, duration_seconds"),
           supabase.from("goals").select("target_weight, target_skeletal_muscle, target_body_fat").maybeSingle(),
           supabase
             .from("body_weights")
@@ -62,6 +65,7 @@ export default function HomePage() {
       setRecent(recentData || []);
       setGoal(goalData || null);
       setBodyEntries(bodyData || []);
+      setRecentWorkouts(allWorkouts || []);
 
       if ((routinesData || []).length > 0) {
         const lastUsedByRoutine = {};
@@ -110,8 +114,17 @@ export default function HomePage() {
       if (count > 0) days += 1;
       sets += count;
     }
-    return { days, sets };
-  }, [dateCounts]);
+
+    const from7 = dateStr(new Date(Date.now() - 6 * 86400000));
+    const durations = recentWorkouts
+      .filter((w) => w.date >= from7 && w.duration_seconds)
+      .map((w) => w.duration_seconds);
+    const avgDuration = durations.length
+      ? Math.round(durations.reduce((a, b) => a + b, 0) / durations.length)
+      : null;
+
+    return { days, sets, avgDuration };
+  }, [dateCounts, recentWorkouts]);
 
   const weekBars = useMemo(() => {
     const bars = [];
@@ -173,7 +186,23 @@ export default function HomePage() {
       </div>
 
       <div style={{ marginTop: 10 }}>
-        <WeeklyActivityBars days={weekBars} />
+        <WeeklyActivityBars
+          days={weekBars}
+          avgDuration={weekStats.avgDuration}
+          onShare={() =>
+            setReportData({
+              days: weekStats.days,
+              sets: weekStats.sets,
+              avgDurationLabel: formatDuration(weekStats.avgDuration),
+              insightMessage: topInsight?.message || null,
+              bars: weekBars.map((b) => ({
+                label: ["일", "월", "화", "수", "목", "금", "토"][b.dayOfWeek],
+                count: b.count,
+                isToday: b.isToday,
+              })),
+            })
+          }
+        />
       </div>
 
       {recommendedRoutine ? (
@@ -247,6 +276,8 @@ export default function HomePage() {
           </motion.div>
         ))
       )}
+
+      <WeeklyReportModal open={reportData !== null} onClose={() => setReportData(null)} reportData={reportData} />
     </div>
   );
 }

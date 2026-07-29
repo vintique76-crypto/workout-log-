@@ -71,9 +71,16 @@ export default function StatsPage() {
     .map(([group, volume]) => ({ group, volume: Math.round(volume) }))
     .sort((a, b) => b.volume - a.volume);
 
-  const radarData = RADAR_GROUPS.map((group) => ({ group, sets: setCountByGroup[group] || 0 }));
+  // 일반적으로 알려진 부위별 권장 주간 세트 수(10~20세트) 하한을 기간에 비례해 근사한 값. 참고용입니다.
+  const recommendedMin = range.days ? Math.round((10 * range.days) / 7) : null;
+
+  const radarData = RADAR_GROUPS.map((group) => ({
+    group,
+    sets: setCountByGroup[group] || 0,
+    recommended: recommendedMin,
+  }));
   const hasRadarData = radarData.some((d) => d.sets > 0);
-  const radarMax = Math.max(4, ...radarData.map((d) => d.sets));
+  const radarMax = Math.max(4, recommendedMin || 0, ...radarData.map((d) => d.sets));
 
   return (
     <div>
@@ -137,9 +144,19 @@ export default function StatsPage() {
                 <PolarGrid stroke="#3a352f" />
                 <PolarAngleAxis dataKey="group" fontSize={12} stroke="#a89f92" />
                 <PolarRadiusAxis domain={[0, radarMax]} tick={false} axisLine={false} />
-                <Tooltip contentStyle={tooltipStyle} formatter={(value) => [`${value}세트`, "세트 수"]} />
+                <Tooltip contentStyle={tooltipStyle} formatter={(value, name) => [`${value}세트`, name]} />
+                {recommendedMin != null && (
+                  <Radar
+                    name="권장 최소"
+                    dataKey="recommended"
+                    stroke="#a89f92"
+                    strokeDasharray="4 3"
+                    fill="none"
+                    isAnimationActive={false}
+                  />
+                )}
                 <Radar
-                  name="세트 수"
+                  name="내 세트 수"
                   dataKey="sets"
                   stroke="#e8825a"
                   fill="#e8825a"
@@ -150,7 +167,7 @@ export default function StatsPage() {
             </ResponsiveContainer>
           )}
           <p style={{ fontSize: 11, color: "var(--text-faint)", marginTop: 6 }}>
-            부위별 총 세트 수예요. 특정 부위가 유독 작게 나오면 그 부위 비중을 늘려보는 걸 고려해보세요.
+            부위별 총 세트 수예요{recommendedMin != null && `. 점선은 일반적으로 권장되는 최소 세트 수(주당 10세트 기준 근사치)예요`}.
           </p>
         </>
       )}

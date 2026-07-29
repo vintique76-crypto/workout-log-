@@ -15,6 +15,7 @@ import ExercisePicker from "../../../components/ExercisePicker";
 import SetTagPicker from "../../../components/SetTagPicker";
 import ShareWorkoutModal from "../../../components/ShareWorkoutModal";
 import { buildShareData } from "../../../lib/shareWorkout";
+import { suggestNextTarget } from "../../../lib/overloadSuggestion";
 
 const stepperBtnStyle = {
   width: 36,
@@ -71,6 +72,7 @@ function NewWorkoutPageInner() {
   const [tagPicker, setTagPicker] = useState(null);
   const [timerSignal, setTimerSignal] = useState(0);
   const [shareData, setShareData] = useState(null);
+  const [startedAt] = useState(() => Date.now());
 
   useEffect(() => {
     if (!session) return;
@@ -226,9 +228,15 @@ function NewWorkoutPageInner() {
     }
     setSaving(true);
     try {
+      const durationSeconds = Math.round((Date.now() - startedAt) / 1000);
       const { data: workout, error: wErr } = await supabase
         .from("workouts")
-        .insert({ user_id: session.user.id, routine_id: routineId || null, date })
+        .insert({
+          user_id: session.user.id,
+          routine_id: routineId || null,
+          date,
+          duration_seconds: durationSeconds,
+        })
         .select()
         .single();
       if (wErr) throw wErr;
@@ -289,6 +297,7 @@ function NewWorkoutPageInner() {
       {exercises.map((ex, exIdx) => {
         const pr = prMap[ex.name.trim()];
         const ghostSets = lastSessionMap[ex.name.trim()];
+        const nextTarget = ghostSets ? suggestNextTarget(ghostSets) : null;
         return (
           <div key={exIdx} style={card}>
             <div style={{ display: "flex", gap: 6, alignItems: "center" }}>
@@ -324,6 +333,11 @@ function NewWorkoutPageInner() {
             {ghostSets && (
               <p style={{ fontSize: 12, color: "var(--text-faint)", margin: "4px 0 0" }}>
                 지난 세션: {ghostSets.filter(Boolean).map((g) => `${g.weight}kg×${g.reps}`).join(", ")}
+              </p>
+            )}
+            {nextTarget && (
+              <p style={{ fontSize: 12, color: "var(--accent)", margin: "4px 0 0" }}>
+                다음 목표: {nextTarget.weight}kg×{nextTarget.reps} 도전해보세요
               </p>
             )}
 

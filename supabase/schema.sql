@@ -21,6 +21,7 @@ create table workouts (
   user_id uuid not null references auth.users(id) on delete cascade,
   routine_id uuid references routines(id) on delete set null,
   date date not null default current_date,
+  duration_seconds int,
   created_at timestamptz not null default now()
 );
 

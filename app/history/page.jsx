@@ -10,6 +10,7 @@ import MoveIconBadge from "../../components/MoveIconBadge";
 import ShareWorkoutModal from "../../components/ShareWorkoutModal";
 import { buildShareData } from "../../lib/shareWorkout";
 import EmptyState from "../../components/EmptyState";
+import { formatDuration } from "../../lib/date";
 
 export default function HistoryPage() {
   const session = useRequireSession();
@@ -23,7 +24,7 @@ export default function HistoryPage() {
     setLoading(true);
     const { data } = await supabase
       .from("workouts")
-      .select("id, date, routines(name)")
+      .select("id, date, duration_seconds, routines(name)")
       .order("date", { ascending: false })
       .order("created_at", { ascending: false });
     setWorkouts(data || []);
@@ -111,6 +112,7 @@ export default function HistoryPage() {
                 <strong>{w.date}</strong>
                 <span style={{ color: "var(--text-muted)", marginLeft: 8, fontSize: 13 }}>
                   {w.routines?.name || "자유 기록"}
+                  {formatDuration(w.duration_seconds) && ` · ${formatDuration(w.duration_seconds)}`}
                 </span>
               </div>
               <div style={{ display: "flex", gap: 6 }}>
