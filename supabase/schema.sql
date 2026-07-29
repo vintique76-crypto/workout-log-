@@ -42,8 +42,19 @@ create table body_weights (
   user_id uuid not null references auth.users(id) on delete cascade,
   date date not null default current_date,
   weight numeric not null,
+  skeletal_muscle_mass numeric,
+  body_fat_percent numeric,
   created_at timestamptz not null default now(),
   unique (user_id, date)
+);
+
+create table goals (
+  id uuid primary key default gen_random_uuid(),
+  user_id uuid not null references auth.users(id) on delete cascade unique,
+  target_weight numeric,
+  target_skeletal_muscle numeric,
+  target_body_fat numeric,
+  updated_at timestamptz not null default now()
 );
 
 alter table routines enable row level security;
@@ -51,6 +62,7 @@ alter table routine_exercises enable row level security;
 alter table workouts enable row level security;
 alter table workout_sets enable row level security;
 alter table body_weights enable row level security;
+alter table goals enable row level security;
 
 create policy "routines_owner" on routines
   for all
@@ -73,6 +85,11 @@ create policy "workout_sets_owner" on workout_sets
   with check (exists (select 1 from workouts w where w.id = workout_sets.workout_id and w.user_id = auth.uid()));
 
 create policy "body_weights_owner" on body_weights
+  for all
+  using (auth.uid() = user_id)
+  with check (auth.uid() = user_id);
+
+create policy "goals_owner" on goals
   for all
   using (auth.uid() = user_id)
   with check (auth.uid() = user_id);

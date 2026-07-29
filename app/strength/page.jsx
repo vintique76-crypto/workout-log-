@@ -6,12 +6,24 @@ import { useRequireSession } from "../../lib/useSession";
 import { supabase } from "../../lib/supabaseClient";
 import { card } from "../../lib/ui";
 import { BIG3, MILESTONES, nextMilestone, estimate1RM } from "../../lib/oneRepMax";
+import { getStrengthLevel } from "../../lib/strengthStandards";
 import MoveIconBadge from "../../components/MoveIconBadge";
 
 export default function StrengthPage() {
   const session = useRequireSession();
   const [sets, setSets] = useState(null);
   const [bodyweight, setBodyweight] = useState(null);
+  const [gender, setGender] = useState("male");
+
+  useEffect(() => {
+    const saved = typeof window !== "undefined" ? localStorage.getItem("strength-gender") : null;
+    if (saved === "male" || saved === "female") setGender(saved);
+  }, []);
+
+  const changeGender = (g) => {
+    setGender(g);
+    if (typeof window !== "undefined") localStorage.setItem("strength-gender", g);
+  };
 
   useEffect(() => {
     if (!session) return;
@@ -65,6 +77,30 @@ export default function StrengthPage() {
     <div>
       <h1 style={{ fontSize: 20 }}>3대 측정</h1>
 
+      <div style={{ display: "flex", gap: 6, marginTop: 10 }}>
+        {[
+          { value: "male", label: "남성 기준" },
+          { value: "female", label: "여성 기준" },
+        ].map((opt) => (
+          <button
+            key={opt.value}
+            onClick={() => changeGender(opt.value)}
+            style={{
+              padding: "6px 12px",
+              borderRadius: "var(--radius-sm)",
+              border: "1px solid var(--border)",
+              background: gender === opt.value ? "var(--accent)" : "var(--bg-elevated)",
+              color: gender === opt.value ? "var(--accent-text)" : "var(--text)",
+              fontWeight: gender === opt.value ? 600 : 400,
+              fontSize: 13,
+              cursor: "pointer",
+            }}
+          >
+            {opt.label}
+          </button>
+        ))}
+      </div>
+
       {sets === null ? (
         <p style={{ marginTop: 16 }}>불러오는 중...</p>
       ) : (
@@ -111,22 +147,47 @@ export default function StrengthPage() {
           </motion.div>
 
           <div style={{ display: "flex", gap: 8, marginTop: 10 }}>
-            {BIG3.map((name, i) => (
-              <motion.div
-                key={name}
-                initial={{ opacity: 0, y: 8 }}
-                animate={{ opacity: 1, y: 0 }}
-                transition={{ duration: 0.3, delay: 0.05 * (i + 1) }}
-                style={{ ...card, flex: 1, marginTop: 0, textAlign: "center" }}
-              >
-                <div style={{ fontSize: 12, color: "var(--text-muted)" }}>{name}</div>
-                <div style={{ fontSize: 22, fontWeight: 800, marginTop: 4 }}>
-                  {big3Max[name] || "—"}
-                  {big3Max[name] > 0 && <span style={{ fontSize: 13, color: "var(--text-muted)" }}>kg</span>}
-                </div>
-              </motion.div>
-            ))}
+            {BIG3.map((name, i) => {
+              const levelInfo = bodyweight ? getStrengthLevel(name, big3Max[name], bodyweight, gender) : null;
+              return (
+                <motion.div
+                  key={name}
+                  initial={{ opacity: 0, y: 8 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  transition={{ duration: 0.3, delay: 0.05 * (i + 1) }}
+                  style={{ ...card, flex: 1, marginTop: 0, textAlign: "center" }}
+                >
+                  <div style={{ fontSize: 12, color: "var(--text-muted)" }}>{name}</div>
+                  <div style={{ fontSize: 22, fontWeight: 800, marginTop: 4 }}>
+                    {big3Max[name] || "—"}
+                    {big3Max[name] > 0 && <span style={{ fontSize: 13, color: "var(--text-muted)" }}>kg</span>}
+                  </div>
+                  {levelInfo && (
+                    <div
+                      style={{
+                        marginTop: 6,
+                        display: "inline-block",
+                        padding: "2px 8px",
+                        borderRadius: 6,
+                        background: "var(--bg-elevated-2)",
+                        color: "var(--accent)",
+                        fontSize: 11,
+                        fontWeight: 700,
+                      }}
+                    >
+                      {levelInfo.label}
+                    </div>
+                  )}
+                </motion.div>
+              );
+            })}
           </div>
+
+          {!bodyweight && (
+            <p style={{ fontSize: 12, color: "var(--text-faint)", marginTop: 8 }}>
+              체중을 기록하면 종목별 근력 등급도 볼 수 있어요.
+            </p>
+          )}
 
           <h2
             style={{
