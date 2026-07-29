@@ -41,7 +41,7 @@ Next.js 15(App Router) + React 19 · Supabase(Auth+Postgres) · framer-motion ·
 | `/workout/[id]/edit` | 기존 기록 수정 (동일 UI, rpe/tag 포함 로드) |
 | `/history` | 기록 목록 — 펼치기/수정/삭제/공유 |
 | `/routines` | 루틴 CRUD, 루틴 템플릿 가져오기, 종목 선택 피커 |
-| `/stats` | 부위별 볼륨 통계(최근 7일/30일/전체) |
+| `/stats` | 부위별 볼륨 통계(최근 7일/30일/전체) + 세트 수 기준 밸런스 레이더 차트 |
 | `/progress` | 종목별 무게·볼륨 그래프 + 예상 1RM |
 | `/strength` | 3대 측정(스쿼트+벤치+데드) 합계·마일스톤, 성별 기준 근력 등급, 예상 1RM 랭킹 |
 | `/weight` | 체중·체성분(골격근량/체지방률) 기록 + 목표 설정/진행 표시 |
@@ -75,10 +75,12 @@ Next.js 15(App Router) + React 19 · Supabase(Auth+Postgres) · framer-motion ·
 14. 운동/체중 기록 CSV 내보내기(`/export`)
 15. 인바디 사진 자동인식(무료 클라이언트 OCR로 체중/골격근량/체지방률 자동 입력, 갤러리 선택 가능) + 체성분 근사 등급·백분위 표시 + 홈 화면 목표 달성률 카드(`GoalProgress`)
 16. 홈 화면 캐릭터 리디자인 — 뼈만 있는 마른 몸(루키)에서 근육이 붙는 5단계 사람 실루엣(다지는 중/성장 중/탄탄/챔피언)으로 전면 교체 (요청: "운동과 관련된 캐릭터가 더 좋을듯")
+17. `/stats`에 부위 밸런스 레이더 차트(세트 수 기준) 추가 — 볼륨(kg) 막대그래프와 별개로, 부위별 절대 세트 수를 6각형 레이더로 보여줘서 특정 부위 소홀 여부를 한눈에 파악
 
 ## 알려진 이슈 · 작업 시 유의사항
 
 - **Windows dev 서버 캐시 버그**: 파일을 여러 번 빠르게 수정하면 `.next/static/chunks/.../page.js`에서 `UNKNOWN: unknown error` 발생. `preview_stop` → `rm -rf .next` → `preview_start` 순서로 재시작하면 해결됨. 브라우저 콘솔에 뜨는 옛날 에러 로그가 실제로는 stale인 경우가 많으니, **서버 로그(`preview_logs`)를 우선 신뢰**할 것.
+- **recharts `Radar`(레이더 차트) + React 19: 애니메이션이 깨져서 도형이 중심점에 뭉쳐 보임** — `<Radar isAnimationActive={false}>`로 반드시 애니메이션을 꺼야 정상적으로 그려짐(recharts 2.15.4 기준, 2026-07-29 확인). BarChart/LineChart는 이 문제 없음, Radar류 컴포넌트만 해당. 새 레이더/파이 계열 차트 추가 시 우선 애니메이션을 꺼보고 안 되면 다른 원인을 찾을 것.
 - **다른 세션과 폴더를 공유할 때 `.next` 절대 건드리지 말 것**: 이 프로젝트 폴더는 종종 여러 Claude 대화창이 동시에 열려 있고, 각자 자기 세션에서 `npm run dev`를 이미 띄워둔 상태일 수 있다. 이때 다른 세션이 `npm run build`(프로덕션 빌드)나 `rm -rf .next`를 실행하면, 실행 중이던 dev 서버의 `.next` 캐시가 깨져서 500 Internal Server Error가 난다(2026-07-29에 실제로 두 번 발생, 사용자가 다른 세션에서 서버를 수동 재시작해서 복구). 코드 검증이 필요하면 `npm run build` 대신 이미 떠 있는 dev 서버로 접속해 `preview_logs`/콘솔 에러로 확인할 것. 포트 충돌이 나면 다른 세션을 종료해달라고 요청한 뒤 이 세션이 직접 서버를 띄우는 방법도 있음(다른 세션의 프로세스를 강제 종료하는 것은 안전장치로 막혀 있어 불가).
 - **모달 안 닫히던 버그**: `AnimatePresence` + Fragment/배열로 감싼 children 조합에서 실제로 닫히지 않는 버그가 있었음. 지금은 모든 바텀시트 모달을 `if (!open) return null;` 단순 조건부 렌더링으로 통일(exit 애니메이션 없이 즉시 언마운트). 새 모달 만들 때 이 패턴 따를 것.
 - **React StrictMode 이중 effect 버그**: `RestTimer`의 자동시작 로직에서 boolean ref("최초 1회만 skip")가 dev 모드 이중 실행으로 오작동했음. 값 비교 방식(이전 signal 값을 ref에 저장하고 비교)으로 수정 완료.
