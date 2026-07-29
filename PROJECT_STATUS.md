@@ -51,7 +51,7 @@ Next.js 15(App Router) + React 19 · Supabase(Auth+Postgres) · framer-motion ·
 
 ## 주요 컴포넌트 (`components/`)
 
-`BottomTabBar` · `RestTimer`(외부 `autoStartSignal` prop으로 자동시작, 하단 플로팅 +30초/+1분 연장) · `MoveIconBadge`(동작유형 아이콘, 클릭시 피커 열기) · `ExercisePicker`(67개 종목 바텀시트) · `RoutineTemplatePicker` · `SetTagPicker`(RPE+태그) · `ShareWorkoutModal`(오운완 텍스트/이미지 공유) · `WorkoutCharacter`(5단계 진화 SVG) · `GoalProgress`(홈 화면 목표 대비 체중/골격근량/체지방률 진행률 카드) · `PageTransition` · `RegisterSW` · `icons.jsx`/`movementIcons.jsx`(아이콘 세트)
+`BottomTabBar` · `RestTimer`(외부 `autoStartSignal` prop으로 자동시작, 하단 플로팅 +30초/+1분 연장) · `MoveIconBadge`(동작유형 아이콘, 클릭시 피커 열기) · `ExercisePicker`(67개 종목 바텀시트) · `RoutineTemplatePicker` · `SetTagPicker`(RPE+태그) · `ShareWorkoutModal`(오운완 텍스트/이미지 공유) · `WorkoutCharacter`(5단계 진화 SVG) · `GoalProgress`(홈 화면 목표 대비 체중/골격근량/체지방률 진행률 카드) · `WeeklyActivityBars`(홈 화면 최근 7일 세트 수 미니 바 그래프) · `InsightIcon`(코칭 인사이트 타입별 아이콘) · `EmptyState`(공용 빈 상태 일러스트+문구) · `PageTransition` · `RegisterSW` · `icons.jsx`/`movementIcons.jsx`(아이콘 세트)
 
 ## 주요 유틸 (`lib/`)
 
@@ -76,6 +76,7 @@ Next.js 15(App Router) + React 19 · Supabase(Auth+Postgres) · framer-motion ·
 15. 인바디 사진 자동인식(무료 클라이언트 OCR로 체중/골격근량/체지방률 자동 입력, 갤러리 선택 가능) + 체성분 근사 등급·백분위 표시 + 홈 화면 목표 달성률 카드(`GoalProgress`)
 16. 홈 화면 캐릭터 리디자인 — 뼈만 있는 마른 몸(루키)에서 근육이 붙는 5단계 사람 실루엣(다지는 중/성장 중/탄탄/챔피언)으로 전면 교체 (요청: "운동과 관련된 캐릭터가 더 좋을듯")
 17. `/stats`에 부위 밸런스 레이더 차트(세트 수 기준) 추가 — 볼륨(kg) 막대그래프와 별개로, 부위별 절대 세트 수를 6각형 레이더로 보여줘서 특정 부위 소홀 여부를 한눈에 파악
+18. 전반적 시각 요소 보강(요청: "적재적소에 시각적인 요소") — 코칭 인사이트 타입별 아이콘(`InsightIcon`, `lib/insights.js`에 `type` 필드 추가), 홈 화면 최근 7일 세트 수 미니 바 그래프(`WeeklyActivityBars`), 여러 페이지에 흩어져 있던 "기록 없음" 회색 텍스트를 공용 `EmptyState` 컴포넌트로 통일, 루틴 카드에 구성 부위 색상 칩(`lib/muscleGroupColors.js`) 추가
 
 ## 알려진 이슈 · 작업 시 유의사항
 
