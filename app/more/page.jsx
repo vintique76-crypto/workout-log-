@@ -5,7 +5,7 @@ import { useRouter } from "next/navigation";
 import { useRequireSession } from "../../lib/useSession";
 import { supabase } from "../../lib/supabaseClient";
 import { card } from "../../lib/ui";
-import { ListIcon, TrendingUpIcon, ScaleIcon, LogOutIcon, SparkleIcon, TrophyIcon } from "../../components/icons";
+import { ListIcon, TrendingUpIcon, ScaleIcon, LogOutIcon, SparkleIcon, TrophyIcon, DownloadIcon } from "../../components/icons";
 
 const ITEMS = [
   { href: "/coach", label: "코칭", desc: "기록 기반 자동 인사이트", Icon: SparkleIcon },
@@ -13,6 +13,7 @@ const ITEMS = [
   { href: "/routines", label: "루틴 관리", desc: "자주 하는 운동을 루틴으로 저장", Icon: ListIcon },
   { href: "/progress", label: "진행 그래프", desc: "종목별 무게·볼륨 변화", Icon: TrendingUpIcon },
   { href: "/weight", label: "체중 기록", desc: "몸무게 변화 추적", Icon: ScaleIcon },
+  { href: "/export", label: "데이터 내보내기", desc: "운동·체중 기록을 CSV로 다운로드", Icon: DownloadIcon },
 ];
 
 export default function MorePage() {

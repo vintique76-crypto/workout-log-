@@ -125,6 +125,15 @@ export function SparkleIcon(props) {
   );
 }
 
+export function DownloadIcon(props) {
+  return (
+    <Svg {...props}>
+      <path d="M12 3v12M7 10l5 5 5-5" />
+      <path d="M4 19h16" />
+    </Svg>
+  );
+}
+
 export function TrophyIcon(props) {
   return (
     <Svg {...props}>
