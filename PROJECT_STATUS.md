@@ -1,4 +1,4 @@
-# 운동 기록 앱 — 프로젝트 현황 (2026-07-29 기준)
+# 운동 기록 앱 — 프로젝트 현황 (2026-07-30 기준)
 
 세트/횟수/무게를 기록하고 루틴·통계·근력지표까지 관리하는 개인용 Next.js 운동 기록 웹앱(PWA).
 다음 세션에서 바로 이어서 작업할 수 있도록 현재 상태를 정리한 문서입니다.
@@ -24,12 +24,12 @@ Next.js 15(App Router) + React 19 · Supabase(Auth+Postgres) · framer-motion ·
 
 - `routines` (id, user_id, name, created_at)
 - `routine_exercises` (id, routine_id, name, order_index, muscle_group)
-- `workouts` (id, user_id, routine_id, date, created_at)
+- `workouts` (id, user_id, routine_id, date, **duration_seconds**, created_at)
 - `workout_sets` (id, workout_id, exercise_name, set_index, reps, weight, muscle_group, **rpe**, **tag**, created_at)
 - `body_weights` (id, user_id, date, weight, **skeletal_muscle_mass**, **body_fat_percent**, created_at) — unique(user_id, date)
 - `goals` (id, user_id unique, target_weight, target_skeletal_muscle, target_body_fat, updated_at)
 
-`supabase/schema.sql`이 마스터(새로 시작할 때 전체 실행). `migration_002~004_*.sql`은 이미 전부 실행 완료된 증분 마이그레이션 — 새 컬럼/테이블 추가할 땐 `migration_005_*.sql` 형식으로 이어서 만들 것.
+`supabase/schema.sql`이 마스터(새로 시작할 때 전체 실행). `migration_002~005_*.sql`은 이미 전부 실행 완료된 증분 마이그레이션 — 새 컬럼/테이블 추가할 땐 `migration_006_*.sql` 형식으로 이어서 만들 것.
 
 ## 페이지 구조 (`app/`)
 
@@ -37,10 +37,10 @@ Next.js 15(App Router) + React 19 · Supabase(Auth+Postgres) · framer-motion ·
 |---|---|
 | `/login` | 이메일/비밀번호 로그인·회원가입 |
 | `/` | 캐릭터 진화(최근 90일 활동일 기준), 이번 주 통계, 오늘의 추천 루틴(가장 안 쓴 루틴 자동 추천), 코칭 인사이트 1개, 최근 기록 |
-| `/workout/new` | 운동 기록 입력 — 고스트 데이터, 스테퍼 버튼, RPE/태그, 자동 휴식 타이머, 저장 후 오운완 공유 모달. `?routine=<id>` 쿼리로 루틴 미리 선택 가능 |
+| `/workout/new` | 운동 기록 입력 — 고스트 데이터, 다음 목표 제안(점진적 과부하), 스테퍼 버튼, RPE/태그, 자동 휴식 타이머, 저장 시 소요시간 자동 기록, 저장 후 오운완 공유 모달. `?routine=<id>` 쿼리로 루틴 미리 선택 가능 |
 | `/workout/[id]/edit` | 기존 기록 수정 (동일 UI, rpe/tag 포함 로드) |
-| `/history` | 기록 목록 — 펼치기/수정/삭제/공유 |
-| `/routines` | 루틴 CRUD, 루틴 템플릿 가져오기, 종목 선택 피커 |
+| `/history` | 기록 목록 — 펼치기/수정/삭제/공유, 소요시간 표시 |
+| `/routines` | 루틴 CRUD, 루틴 템플릿 가져오기, 종목 선택 피커, 구성 부위 색상 칩 |
 | `/stats` | 부위별 볼륨 통계(최근 7일/30일/전체) + 세트 수 기준 밸런스 레이더 차트 |
 | `/progress` | 종목별 무게·볼륨 그래프 + 예상 1RM |
 | `/strength` | 3대 측정(스쿼트+벤치+데드) 합계·마일스톤, 성별 기준 근력 등급, 예상 1RM 랭킹 |
@@ -51,11 +51,11 @@ Next.js 15(App Router) + React 19 · Supabase(Auth+Postgres) · framer-motion ·
 
 ## 주요 컴포넌트 (`components/`)
 
-`BottomTabBar` · `RestTimer`(외부 `autoStartSignal` prop으로 자동시작, 하단 플로팅 +30초/+1분 연장) · `MoveIconBadge`(동작유형 아이콘, 클릭시 피커 열기) · `ExercisePicker`(67개 종목 바텀시트) · `RoutineTemplatePicker` · `SetTagPicker`(RPE+태그) · `ShareWorkoutModal`(오운완 텍스트/이미지 공유) · `WorkoutCharacter`(5단계 진화 SVG) · `GoalProgress`(홈 화면 목표 대비 체중/골격근량/체지방률 진행률 카드) · `WeeklyActivityBars`(홈 화면 최근 7일 세트 수 미니 바 그래프) · `InsightIcon`(코칭 인사이트 타입별 아이콘) · `EmptyState`(공용 빈 상태 일러스트+문구) · `PageTransition` · `RegisterSW` · `icons.jsx`/`movementIcons.jsx`(아이콘 세트)
+`BottomTabBar` · `RestTimer`(외부 `autoStartSignal` prop으로 자동시작, 하단 플로팅 +30초/+1분 연장) · `MoveIconBadge`(동작유형 아이콘, 클릭시 피커 열기) · `ExercisePicker`(67개 종목 바텀시트) · `RoutineTemplatePicker` · `SetTagPicker`(RPE+태그) · `ShareWorkoutModal`(오운완 텍스트/이미지 공유) · `WeeklyReportModal`(주간 리포트 텍스트/이미지 공유) · `WorkoutCharacter`(5단계 진화 SVG) · `GoalProgress`(홈 화면 목표 대비 체중/골격근량/체지방률 진행률 카드) · `WeeklyActivityBars`(홈 화면 최근 7일 세트 수 미니 바 그래프 + 평균 소요시간 + 리포트 공유 버튼) · `InsightIcon`(코칭 인사이트 타입별 아이콘) · `EmptyState`(공용 빈 상태 일러스트+문구) · `PageTransition` · `RegisterSW` · `icons.jsx`/`movementIcons.jsx`(아이콘 세트)
 
 ## 주요 유틸 (`lib/`)
 
-`useSession` · `useExerciseStats`(PR맵+자동완성 목록) · `useLastSessionSets`(고스트 데이터용) · `exerciseLibrary.js`(67개 종목, 부위+아이콘 매핑) · `exerciseIcon.js`(키워드 기반 아이콘 자동매칭) · `routineTemplates.js`(5분할/Starting Strength/StrongLifts 5x5/PHUL/PPL/Wendler 5·3·1/아놀드 스플릿) · `insights.js`(무료 규칙기반 코칭 5종) · `oneRepMax.js`(Epley 1RM, 3대 마일스톤) · `strengthStandards.js`(성별×종목 근력등급 근사표) · `bodyCompStandards.js`(성별 기준 골격근량/체지방률 근사 등급·백분위) · `inbodyOcr.js`(tesseract.js로 인바디 사진에서 체중/골격근량/체지방률 숫자 추출, 무료) · `exportCsv.js`(CSV 다운로드) · `shareWorkout.js`/`shareImage.js`(공유 텍스트/캔버스 이미지) · `josa.js`(한국어 조사 자동처리)
+`useSession` · `useExerciseStats`(PR맵+자동완성 목록) · `useLastSessionSets`(고스트 데이터용) · `exerciseLibrary.js`(67개 종목, 부위+아이콘 매핑) · `exerciseIcon.js`(키워드 기반 아이콘 자동매칭) · `routineTemplates.js`(5분할/Starting Strength/StrongLifts 5x5/PHUL/PPL/Wendler 5·3·1/아놀드 스플릿) · `insights.js`(무료 규칙기반 코칭 5종) · `oneRepMax.js`(Epley 1RM, 3대 마일스톤) · `strengthStandards.js`(성별×종목 근력등급 근사표) · `bodyCompStandards.js`(성별 기준 골격근량/체지방률 근사 등급·백분위) · `inbodyOcr.js`(tesseract.js로 인바디 사진에서 체중/골격근량/체지방률 숫자 추출, 무료) · `exportCsv.js`(CSV 다운로드) · `overloadSuggestion.js`(지난 세션 기반 다음 목표 제안 — 무게+2.5kg 또는 횟수+1) · `weeklyReport.js`(주간 리포트 텍스트 생성) · `shareWorkout.js`/`shareImage.js`(공유 텍스트/캔버스 이미지, `generateWeeklyReportImage` 포함) · `josa.js`(한국어 조사 자동처리)
 
 ## 완성된 기능 (시간순 요약)
 
@@ -77,12 +77,14 @@ Next.js 15(App Router) + React 19 · Supabase(Auth+Postgres) · framer-motion ·
 16. 홈 화면 캐릭터 리디자인 — 뼈만 있는 마른 몸(루키)에서 근육이 붙는 5단계 사람 실루엣(다지는 중/성장 중/탄탄/챔피언)으로 전면 교체 (요청: "운동과 관련된 캐릭터가 더 좋을듯")
 17. `/stats`에 부위 밸런스 레이더 차트(세트 수 기준) 추가 — 볼륨(kg) 막대그래프와 별개로, 부위별 절대 세트 수를 6각형 레이더로 보여줘서 특정 부위 소홀 여부를 한눈에 파악
 18. 전반적 시각 요소 보강(요청: "적재적소에 시각적인 요소") — 코칭 인사이트 타입별 아이콘(`InsightIcon`, `lib/insights.js`에 `type` 필드 추가), 홈 화면 최근 7일 세트 수 미니 바 그래프(`WeeklyActivityBars`), 여러 페이지에 흩어져 있던 "기록 없음" 회색 텍스트를 공용 `EmptyState` 컴포넌트로 통일, 루틴 카드에 구성 부위 색상 칩(`lib/muscleGroupColors.js`) 추가
+19. 운동 소요시간 자동 기록(`workouts.duration_seconds`, migration_005) + 히스토리/홈 화면 평균 소요시간 표시, 점진적 과부하 다음 목표 제안(`lib/overloadSuggestion.js`), `/stats` 레이더에 권장 최소 세트 수 점선 오버레이, 홈 화면 "이번 주 활동" 카드에 주간 리포트 텍스트/이미지 공유 버튼(`WeeklyReportModal`) 추가
 
 ## 알려진 이슈 · 작업 시 유의사항
 
 - **Windows dev 서버 캐시 버그**: 파일을 여러 번 빠르게 수정하면 `.next/static/chunks/.../page.js`에서 `UNKNOWN: unknown error` 발생. `preview_stop` → `rm -rf .next` → `preview_start` 순서로 재시작하면 해결됨. 브라우저 콘솔에 뜨는 옛날 에러 로그가 실제로는 stale인 경우가 많으니, **서버 로그(`preview_logs`)를 우선 신뢰**할 것.
 - **자동화 브라우저 세션에서는 CSS/framer-motion/recharts 애니메이션이 절대 진행되지 않음** — Claude Code의 Browser 미리보기 패널이 화면에 표시(compositing)되지 않는 상태로 자동화 테스트를 하면, `requestAnimationFrame` 기반 애니메이션(순수 CSS transition 포함)이 전부 `initial` 상태에 멈춰있는 것처럼 보인다(2026-07-29 확인: 레이더 차트가 중심에 뭉쳐 보여서 처음엔 recharts+React19 버그로 오판하고 `isAnimationActive={false}`로 우회했는데, 이후 순수 `<div>` CSS transition으로 재현해보니 그것도 안 움직여서 **테스트 환경 자체의 한계**임을 확인함. 실제 사용자 브라우저에서는 정상 작동할 가능성이 높음). 따라서 애니메이션이 "안 보인다"고 라이브러리 버그로 단정하지 말 것 — `getComputedStyle`로 최종 목표값이 아니라 DOM에 전달된 `animate`/목표 props가 논리적으로 맞는지, 그리고 텍스트로 표현되는 계산 결과가 맞는지로 검증하고, 실제 시각적 애니메이션 확인은 사용자에게 부탁할 것. `/stats`의 Radar는 `isAnimationActive={false}`로 남겨뒀지만(정적이어도 기능상 문제 없음), 이게 "버그 우회"가 아니라 "애니메이션 없이도 무방한 선택"이었다는 점을 기억할 것.
 - **다른 세션과 폴더를 공유할 때 `.next` 절대 건드리지 말 것**: 이 프로젝트 폴더는 종종 여러 Claude 대화창이 동시에 열려 있고, 각자 자기 세션에서 `npm run dev`를 이미 띄워둔 상태일 수 있다. 이때 다른 세션이 `npm run build`(프로덕션 빌드)나 `rm -rf .next`를 실행하면, 실행 중이던 dev 서버의 `.next` 캐시가 깨져서 500 Internal Server Error가 난다(2026-07-29에 실제로 두 번 발생, 사용자가 다른 세션에서 서버를 수동 재시작해서 복구). 코드 검증이 필요하면 `npm run build` 대신 이미 떠 있는 dev 서버로 접속해 `preview_logs`/콘솔 에러로 확인할 것. 포트 충돌이 나면 다른 세션을 종료해달라고 요청한 뒤 이 세션이 직접 서버를 띄우는 방법도 있음(다른 세션의 프로세스를 강제 종료하는 것은 안전장치로 막혀 있어 불가).
+- **좁은 뷰포트에서 `computer{left_click, ref}`가 안 먹힐 때가 있음**: 뷰포트가 좁을 때(모바일 사이즈 등) `/workout/new`의 "기록 저장" 버튼처럼 ref 기반 좌표 클릭이 계속 실패하면서 아무 반응도 없는(에러도 안 뜨고 폼도 그대로인) 경우가 있었다(2026-07-30). 이건 앱 버그가 아니라 브라우저 자동화 도구의 클릭 좌표 계산 문제였음 — `javascript_tool`로 `document.querySelector`해서 `.click()`을 직접 호출하면 정상 동작함. 클릭이 반응 없어 보이면 앱을 의심하기 전에 이 방법으로 먼저 확인할 것.
 - **모달 안 닫히던 버그**: `AnimatePresence` + Fragment/배열로 감싼 children 조합에서 실제로 닫히지 않는 버그가 있었음. 지금은 모든 바텀시트 모달을 `if (!open) return null;` 단순 조건부 렌더링으로 통일(exit 애니메이션 없이 즉시 언마운트). 새 모달 만들 때 이 패턴 따를 것.
 - **React StrictMode 이중 effect 버그**: `RestTimer`의 자동시작 로직에서 boolean ref("최초 1회만 skip")가 dev 모드 이중 실행으로 오작동했음. 값 비교 방식(이전 signal 값을 ref에 저장하고 비교)으로 수정 완료.
 - **stale closure 버그**: 같은 렌더 안에서 `setState` 기반 업데이트 함수를 연속 호출하면 나중 호출이 이전 호출을 덮어쓰는 문제가 있었음 → 모든 exercises/sets 업데이트 함수를 functional setState(`setX(prev => ...)`)로 통일해서 해결.
