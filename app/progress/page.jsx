@@ -4,7 +4,8 @@ import { useEffect, useMemo, useState } from "react";
 import { LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer } from "recharts";
 import { useRequireSession } from "../../lib/useSession";
 import { supabase } from "../../lib/supabaseClient";
-import { inputStyle } from "../../lib/ui";
+import { inputStyle, card } from "../../lib/ui";
+import { estimate1RM } from "../../lib/oneRepMax";
 
 const sectionLabel = {
   fontSize: 13,
@@ -64,6 +65,10 @@ export default function ProgressPage() {
     return Object.values(byDate).sort((a, b) => a.date.localeCompare(b.date));
   }, [rows]);
 
+  const best1RM = useMemo(() => {
+    return rows.reduce((max, r) => Math.max(max, estimate1RM(r.weight, r.reps)), 0);
+  }, [rows]);
+
   if (!session) return <p>로딩 중...</p>;
 
   return (
@@ -84,6 +89,13 @@ export default function ProgressPage() {
               </option>
             ))}
           </select>
+
+          {best1RM > 0 && (
+            <div style={{ ...card, display: "flex", justifyContent: "space-between", alignItems: "center" }}>
+              <span style={{ fontSize: 13, color: "var(--text-muted)" }}>예상 1RM</span>
+              <strong style={{ fontSize: 20, color: "var(--accent)" }}>{best1RM}kg</strong>
+            </div>
+          )}
 
           {loading ? (
             <p>불러오는 중...</p>

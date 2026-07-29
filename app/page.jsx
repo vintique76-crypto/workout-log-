@@ -8,7 +8,6 @@ import { supabase } from "../lib/supabaseClient";
 import { primaryBtn, card } from "../lib/ui";
 import { dateStr } from "../lib/date";
 import { computeInsights } from "../lib/insights";
-import CalendarHeatmap from "../components/CalendarHeatmap";
 import WorkoutCharacter from "../components/WorkoutCharacter";
 
 const sectionLabel = {
@@ -189,10 +188,7 @@ export default function HomePage() {
         </Link>
       )}
 
-      <h2 style={sectionLabel}>최근 90일</h2>
-      <CalendarHeatmap dateCounts={dateCounts} />
-
-      <h2 style={{ ...sectionLabel, marginTop: 24 }}>최근 기록</h2>
+      <h2 style={sectionLabel}>최근 기록</h2>
       {loading ? (
         <p>불러오는 중...</p>
       ) : recent.length === 0 ? (

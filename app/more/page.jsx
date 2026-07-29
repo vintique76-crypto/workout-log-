@@ -5,10 +5,11 @@ import { useRouter } from "next/navigation";
 import { useRequireSession } from "../../lib/useSession";
 import { supabase } from "../../lib/supabaseClient";
 import { card } from "../../lib/ui";
-import { ListIcon, TrendingUpIcon, ScaleIcon, LogOutIcon, SparkleIcon } from "../../components/icons";
+import { ListIcon, TrendingUpIcon, ScaleIcon, LogOutIcon, SparkleIcon, TrophyIcon } from "../../components/icons";
 
 const ITEMS = [
   { href: "/coach", label: "코칭", desc: "기록 기반 자동 인사이트", Icon: SparkleIcon },
+  { href: "/strength", label: "3대 측정", desc: "스쿼트·벤치·데드 합계와 예상 1RM 랭킹", Icon: TrophyIcon },
   { href: "/routines", label: "루틴 관리", desc: "자주 하는 운동을 루틴으로 저장", Icon: ListIcon },
   { href: "/progress", label: "진행 그래프", desc: "종목별 무게·볼륨 변화", Icon: TrendingUpIcon },
   { href: "/weight", label: "체중 기록", desc: "몸무게 변화 추적", Icon: ScaleIcon },

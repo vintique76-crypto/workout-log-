@@ -124,3 +124,14 @@ export function SparkleIcon(props) {
     </Svg>
   );
 }
+
+export function TrophyIcon(props) {
+  return (
+    <Svg {...props}>
+      <path d="M8 4h8v5a4 4 0 0 1-8 0V4Z" />
+      <path d="M8 5H5a3 3 0 0 0 3 5" />
+      <path d="M16 5h3a3 3 0 0 1-3 5" />
+      <path d="M12 13v3M9 20h6M10 20v-2.5M14 20v-2.5" />
+    </Svg>
+  );
+}
