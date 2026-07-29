@@ -9,6 +9,7 @@ import { primaryBtn, card } from "../lib/ui";
 import { dateStr } from "../lib/date";
 import { computeInsights } from "../lib/insights";
 import WorkoutCharacter from "../components/WorkoutCharacter";
+import GoalProgress from "../components/GoalProgress";
 
 const sectionLabel = {
   fontSize: 13,
@@ -25,6 +26,8 @@ export default function HomePage() {
   const [topInsight, setTopInsight] = useState(null);
   const [recommendedRoutine, setRecommendedRoutine] = useState(null);
   const [loading, setLoading] = useState(true);
+  const [goal, setGoal] = useState(null);
+  const [bodyEntries, setBodyEntries] = useState([]);
 
   useEffect(() => {
     if (!session) return;
@@ -32,7 +35,7 @@ export default function HomePage() {
       const from = new Date();
       from.setDate(from.getDate() - 90);
 
-      const [{ data: recentData }, { data: setsData }, { data: routinesData }, { data: allWorkouts }] =
+      const [{ data: recentData }, { data: setsData }, { data: routinesData }, { data: allWorkouts }, { data: goalData }, { data: bodyData }] =
         await Promise.all([
           supabase
             .from("workouts")
@@ -46,9 +49,16 @@ export default function HomePage() {
             .gte("workouts.date", dateStr(from)),
           supabase.from("routines").select("id, name"),
           supabase.from("workouts").select("routine_id, date"),
+          supabase.from("goals").select("target_weight, target_skeletal_muscle, target_body_fat").maybeSingle(),
+          supabase
+            .from("body_weights")
+            .select("date, weight, skeletal_muscle_mass, body_fat_percent")
+            .order("date", { ascending: true }),
         ]);
 
       setRecent(recentData || []);
+      setGoal(goalData || null);
+      setBodyEntries(bodyData || []);
 
       if ((routinesData || []).length > 0) {
         const lastUsedByRoutine = {};
@@ -170,6 +180,8 @@ export default function HomePage() {
           오늘 운동 기록하기
         </Link>
       )}
+
+      <GoalProgress goal={goal} entries={bodyEntries} />
 
       {topInsight && (
         <Link href="/coach" style={{ textDecoration: "none", color: "inherit", display: "block" }}>

@@ -1,11 +1,13 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer } from "recharts";
 import { useRequireSession } from "../../lib/useSession";
 import { supabase } from "../../lib/supabaseClient";
 import { inputStyle, primaryBtn, smallBtn, card } from "../../lib/ui";
 import { todayStr } from "../../lib/date";
+import { recognizeInbodyPhoto } from "../../lib/inbodyOcr";
+import { getSkeletalMuscleGrade, getBodyFatGrade } from "../../lib/bodyCompStandards";
 
 const tooltipStyle = {
   background: "#2f2b28",
@@ -43,6 +45,17 @@ export default function WeightPage() {
   const [goalFat, setGoalFat] = useState("");
   const [editingGoal, setEditingGoal] = useState(false);
   const [goalSaving, setGoalSaving] = useState(false);
+
+  const [gender, setGender] = useState("male");
+  const [ocrLoading, setOcrLoading] = useState(false);
+  const [ocrError, setOcrError] = useState("");
+  const [ocrNotice, setOcrNotice] = useState("");
+  const fileInputRef = useRef(null);
+
+  useEffect(() => {
+    const saved = typeof window !== "undefined" ? localStorage.getItem("strength-gender") : null;
+    if (saved === "male" || saved === "female") setGender(saved);
+  }, []);
 
   const load = async () => {
     const [{ data }, { data: goalData }] = await Promise.all([
@@ -97,6 +110,42 @@ export default function WeightPage() {
     }
   };
 
+  const handlePhotoSelected = async (e) => {
+    const file = e.target.files?.[0];
+    e.target.value = "";
+    if (!file) return;
+    setOcrLoading(true);
+    setOcrError("");
+    setOcrNotice("");
+    try {
+      const result = await recognizeInbodyPhoto(file);
+      const found = [];
+      if (result.weight != null) {
+        setWeight(String(result.weight));
+        found.push("체중");
+      }
+      if (result.muscle != null) {
+        setMuscle(String(result.muscle));
+        setShowComposition(true);
+        found.push("골격근량");
+      }
+      if (result.fat != null) {
+        setFat(String(result.fat));
+        setShowComposition(true);
+        found.push("체지방률");
+      }
+      if (found.length === 0) {
+        setOcrError("사진에서 숫자를 찾지 못했어요. 값을 직접 입력해주세요.");
+      } else {
+        setOcrNotice(`${found.join(", ")} 값을 사진에서 인식했어요. 확인 후 저장해주세요.`);
+      }
+    } catch (err) {
+      setOcrError("사진 인식에 실패했어요: " + err.message);
+    } finally {
+      setOcrLoading(false);
+    }
+  };
+
   const handleDelete = async (id) => {
     await supabase.from("body_weights").delete().eq("id", id);
     load();
@@ -131,9 +180,37 @@ export default function WeightPage() {
 
   const hasGoal = goal && (goal.target_weight || goal.target_skeletal_muscle || goal.target_body_fat);
 
+  const changeGender = (g) => {
+    setGender(g);
+    if (typeof window !== "undefined") localStorage.setItem("strength-gender", g);
+  };
+
+  const muscleGrade =
+    latest?.skeletal_muscle_mass != null ? getSkeletalMuscleGrade(latest.skeletal_muscle_mass, latest.weight, gender) : null;
+  const fatGrade = latest?.body_fat_percent != null ? getBodyFatGrade(latest.body_fat_percent, gender) : null;
+
   return (
     <div>
       <h1 style={{ fontSize: 20 }}>체중 · 체성분 기록</h1>
+
+      <input
+        ref={fileInputRef}
+        type="file"
+        accept="image/*"
+        capture="environment"
+        onChange={handlePhotoSelected}
+        style={{ display: "none" }}
+      />
+      <button
+        type="button"
+        onClick={() => fileInputRef.current?.click()}
+        disabled={ocrLoading}
+        style={{ ...smallBtn, marginTop: 10, display: "block", width: "100%", textAlign: "center" }}
+      >
+        {ocrLoading ? "사진에서 숫자 인식 중..." : "인바디 사진으로 자동 입력"}
+      </button>
+      {ocrNotice && <p style={{ color: "var(--accent)", fontSize: 12, marginTop: 6 }}>{ocrNotice}</p>}
+      {ocrError && <p style={{ color: "var(--danger)", fontSize: 12, marginTop: 6 }}>{ocrError}</p>}
 
       <form onSubmit={handleSave} style={{ ...card, display: "flex", flexDirection: "column", gap: 8 }}>
         <div style={{ display: "flex", gap: 8 }}>
@@ -169,6 +246,53 @@ export default function WeightPage() {
         </button>
       </form>
       {error && <p style={{ color: "var(--danger)", fontSize: 13, marginTop: 8 }}>{error}</p>}
+
+      {(muscleGrade || fatGrade) && (
+        <>
+          <div style={{ display: "flex", gap: 6, marginTop: 16 }}>
+            {[
+              { value: "male", label: "남성 기준" },
+              { value: "female", label: "여성 기준" },
+            ].map((opt) => (
+              <button
+                key={opt.value}
+                onClick={() => changeGender(opt.value)}
+                style={{
+                  padding: "6px 12px",
+                  borderRadius: "var(--radius-sm)",
+                  border: "1px solid var(--border)",
+                  background: gender === opt.value ? "var(--accent)" : "var(--bg-elevated)",
+                  color: gender === opt.value ? "var(--accent-text)" : "var(--text)",
+                  fontWeight: gender === opt.value ? 600 : 400,
+                  fontSize: 13,
+                  cursor: "pointer",
+                }}
+              >
+                {opt.label}
+              </button>
+            ))}
+          </div>
+          <div style={{ display: "flex", gap: 10, marginTop: 10 }}>
+            {muscleGrade && (
+              <div style={{ ...card, flex: 1, marginTop: 0, textAlign: "center" }}>
+                <div style={{ fontSize: 12, color: "var(--text-muted)" }}>골격근량 등급</div>
+                <div style={{ fontSize: 18, fontWeight: 800, color: "var(--accent)", marginTop: 4 }}>{muscleGrade.label}</div>
+                <div style={{ fontSize: 11, color: "var(--text-faint)", marginTop: 2 }}>{muscleGrade.percentile}</div>
+              </div>
+            )}
+            {fatGrade && (
+              <div style={{ ...card, flex: 1, marginTop: 0, textAlign: "center" }}>
+                <div style={{ fontSize: 12, color: "var(--text-muted)" }}>체지방률 등급</div>
+                <div style={{ fontSize: 18, fontWeight: 800, color: "var(--accent)", marginTop: 4 }}>{fatGrade.label}</div>
+                <div style={{ fontSize: 11, color: "var(--text-faint)", marginTop: 2 }}>{fatGrade.percentile}</div>
+              </div>
+            )}
+          </div>
+          <p style={{ fontSize: 11, color: "var(--text-faint)", marginTop: 6 }}>
+            체형·연령에 따라 편차가 큰 참고용 근사 기준이에요.
+          </p>
+        </>
+      )}
 
       <h2 style={sectionLabel}>목표</h2>
       {editingGoal ? (
