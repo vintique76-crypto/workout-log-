@@ -18,6 +18,7 @@ import {
 import { useRequireSession } from "../../lib/useSession";
 import { supabase } from "../../lib/supabaseClient";
 import { dateStr } from "../../lib/date";
+import EmptyState from "../../components/EmptyState";
 
 const RANGES = [
   { label: "최근 7일", days: 7 },
@@ -102,7 +103,7 @@ export default function StatsPage() {
       {loading ? (
         <p style={{ marginTop: 16 }}>불러오는 중...</p>
       ) : chartData.length === 0 ? (
-        <p style={{ color: "var(--text-muted)", marginTop: 16 }}>해당 기간에 기록이 없어요.</p>
+        <EmptyState message="해당 기간에 기록이 없어요." />
       ) : (
         <ResponsiveContainer width="100%" height={Math.max(220, chartData.length * 44)}>
           <BarChart data={chartData} layout="vertical" margin={{ left: 16, right: 16 }}>
@@ -129,7 +130,7 @@ export default function StatsPage() {
             부위 밸런스 (세트 수)
           </h2>
           {!hasRadarData ? (
-            <p style={{ color: "var(--text-muted)", marginTop: 8 }}>해당 기간에 기록이 없어요.</p>
+            <EmptyState message="해당 기간에 기록이 없어요." />
           ) : (
             <ResponsiveContainer width="100%" height={280}>
               <RadarChart cx="50%" cy="50%" outerRadius="70%" data={radarData}>

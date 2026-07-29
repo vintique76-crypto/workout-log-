@@ -7,6 +7,8 @@ import { supabase } from "../../lib/supabaseClient";
 import { card } from "../../lib/ui";
 import { dateStr } from "../../lib/date";
 import { computeInsights } from "../../lib/insights";
+import InsightIcon from "../../components/InsightIcon";
+import EmptyState from "../../components/EmptyState";
 
 export default function CoachPage() {
   const session = useRequireSession();
@@ -49,9 +51,7 @@ export default function CoachPage() {
       {insights === null ? (
         <p style={{ marginTop: 16 }}>분석 중...</p>
       ) : insights.length === 0 ? (
-        <p style={{ color: "var(--text-muted)", marginTop: 16 }}>
-          아직 분석할 기록이 부족해요. 꾸준히 기록하면 여기에 인사이트가 나타나요.
-        </p>
+        <EmptyState message="아직 분석할 기록이 부족해요. 꾸준히 기록하면 여기에 인사이트가 나타나요." />
       ) : (
         insights.map((insight, i) => (
           <motion.div
@@ -61,9 +61,13 @@ export default function CoachPage() {
             transition={{ duration: 0.25, delay: i * 0.05 }}
             style={{
               ...card,
+              display: "flex",
+              alignItems: "center",
+              gap: 12,
               borderLeft: `3px solid ${insight.tone === "positive" ? "var(--success)" : "var(--accent)"}`,
             }}
           >
+            <InsightIcon type={insight.type} tone={insight.tone} />
             <p style={{ margin: 0, fontSize: 14, lineHeight: 1.5 }}>{insight.message}</p>
           </motion.div>
         ))

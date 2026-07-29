@@ -8,6 +8,7 @@ import { card } from "../../lib/ui";
 import { BIG3, MILESTONES, nextMilestone, estimate1RM } from "../../lib/oneRepMax";
 import { getStrengthLevel } from "../../lib/strengthStandards";
 import MoveIconBadge from "../../components/MoveIconBadge";
+import EmptyState from "../../components/EmptyState";
 
 export default function StrengthPage() {
   const session = useRequireSession();
@@ -201,7 +202,7 @@ export default function StrengthPage() {
             예상 1RM 랭킹
           </h2>
           {ranking.length === 0 ? (
-            <p style={{ color: "var(--text-muted)", marginTop: 8 }}>아직 기록이 없어요.</p>
+            <EmptyState message="아직 기록이 없어요." />
           ) : (
             ranking.map((r, i) => (
               <motion.div

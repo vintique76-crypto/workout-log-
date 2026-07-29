@@ -8,6 +8,7 @@ import { inputStyle, primaryBtn, smallBtn, card } from "../../lib/ui";
 import { todayStr } from "../../lib/date";
 import { recognizeInbodyPhoto } from "../../lib/inbodyOcr";
 import { getSkeletalMuscleGrade, getBodyFatGrade } from "../../lib/bodyCompStandards";
+import EmptyState from "../../components/EmptyState";
 
 const tooltipStyle = {
   background: "#2f2b28",
@@ -401,7 +402,7 @@ export default function WeightPage() {
 
       <h2 style={sectionLabel}>최근 기록</h2>
       {recent.length === 0 ? (
-        <p style={{ color: "var(--text-muted)" }}>아직 기록이 없어요.</p>
+        <EmptyState message="아직 기록이 없어요." />
       ) : (
         recent.map((e) => (
           <div key={e.id} style={{ ...card, display: "flex", justifyContent: "space-between", alignItems: "center" }}>

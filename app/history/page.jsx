@@ -9,6 +9,7 @@ import { card, smallBtn } from "../../lib/ui";
 import MoveIconBadge from "../../components/MoveIconBadge";
 import ShareWorkoutModal from "../../components/ShareWorkoutModal";
 import { buildShareData } from "../../lib/shareWorkout";
+import EmptyState from "../../components/EmptyState";
 
 export default function HistoryPage() {
   const session = useRequireSession();
@@ -92,7 +93,7 @@ export default function HistoryPage() {
       {loading ? (
         <p>불러오는 중...</p>
       ) : workouts.length === 0 ? (
-        <p style={{ color: "var(--text-muted)" }}>아직 기록이 없어요.</p>
+        <EmptyState message="아직 기록이 없어요." />
       ) : (
         workouts.map((w, idx) => (
           <motion.div

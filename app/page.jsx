@@ -10,6 +10,9 @@ import { dateStr } from "../lib/date";
 import { computeInsights } from "../lib/insights";
 import WorkoutCharacter from "../components/WorkoutCharacter";
 import GoalProgress from "../components/GoalProgress";
+import InsightIcon from "../components/InsightIcon";
+import WeeklyActivityBars from "../components/WeeklyActivityBars";
+import EmptyState from "../components/EmptyState";
 
 const sectionLabel = {
   fontSize: 13,
@@ -110,6 +113,21 @@ export default function HomePage() {
     return { days, sets };
   }, [dateCounts]);
 
+  const weekBars = useMemo(() => {
+    const bars = [];
+    for (let i = 6; i >= 0; i--) {
+      const d = new Date();
+      d.setDate(d.getDate() - i);
+      bars.push({
+        date: dateStr(d),
+        dayOfWeek: d.getDay(),
+        count: dateCounts[dateStr(d)] || 0,
+        isToday: i === 0,
+      });
+    }
+    return bars;
+  }, [dateCounts]);
+
   const activeDays90 = useMemo(() => Object.keys(dateCounts).length, [dateCounts]);
 
   if (!session) return <p>로딩 중...</p>;
@@ -154,6 +172,10 @@ export default function HomePage() {
         </motion.div>
       </div>
 
+      <div style={{ marginTop: 10 }}>
+        <WeeklyActivityBars days={weekBars} />
+      </div>
+
       {recommendedRoutine ? (
         <motion.div
           initial={{ opacity: 0, y: 8 }}
@@ -191,11 +213,17 @@ export default function HomePage() {
             transition={{ duration: 0.3, delay: 0.1 }}
             style={{
               ...card,
+              display: "flex",
+              alignItems: "center",
+              gap: 12,
               borderLeft: `3px solid ${topInsight.tone === "positive" ? "var(--success)" : "var(--accent)"}`,
             }}
           >
-            <div style={{ fontSize: 11, color: "var(--text-muted)", marginBottom: 4 }}>코칭</div>
-            <p style={{ margin: 0, fontSize: 14, lineHeight: 1.5 }}>{topInsight.message}</p>
+            <InsightIcon type={topInsight.type} tone={topInsight.tone} />
+            <div>
+              <div style={{ fontSize: 11, color: "var(--text-muted)", marginBottom: 4 }}>코칭</div>
+              <p style={{ margin: 0, fontSize: 14, lineHeight: 1.5 }}>{topInsight.message}</p>
+            </div>
           </motion.div>
         </Link>
       )}
@@ -204,7 +232,7 @@ export default function HomePage() {
       {loading ? (
         <p>불러오는 중...</p>
       ) : recent.length === 0 ? (
-        <p style={{ color: "var(--text-muted)" }}>아직 기록이 없어요. 첫 운동을 기록해보세요.</p>
+        <EmptyState message="아직 기록이 없어요. 첫 운동을 기록해보세요." />
       ) : (
         recent.map((w, i) => (
           <motion.div

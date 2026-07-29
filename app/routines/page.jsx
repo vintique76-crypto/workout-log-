@@ -10,6 +10,8 @@ import { MUSCLE_GROUPS } from "../../lib/muscleGroups";
 import MoveIconBadge from "../../components/MoveIconBadge";
 import ExercisePicker from "../../components/ExercisePicker";
 import RoutineTemplatePicker from "../../components/RoutineTemplatePicker";
+import EmptyState from "../../components/EmptyState";
+import { colorForMuscleGroup } from "../../lib/muscleGroupColors";
 
 function emptyEntry() {
   return { name: "", muscleGroup: "기타" };
@@ -268,7 +270,7 @@ export default function RoutinesPage() {
       {loading ? (
         <p>불러오는 중...</p>
       ) : routines.length === 0 ? (
-        <p style={{ color: "var(--text-muted)" }}>아직 만든 루틴이 없어요.</p>
+        <EmptyState message="아직 만든 루틴이 없어요." />
       ) : (
         routines.map((r, idx) =>
           editingId === r.id ? (
@@ -337,6 +339,34 @@ export default function RoutinesPage() {
                     삭제
                   </button>
                 </div>
+              </div>
+              <div style={{ display: "flex", gap: 6, flexWrap: "wrap", marginTop: 8 }}>
+                {Array.from(new Set(r.routine_exercises.map((ex) => ex.muscle_group).filter(Boolean))).map((g) => (
+                  <span
+                    key={g}
+                    style={{
+                      display: "inline-flex",
+                      alignItems: "center",
+                      gap: 4,
+                      padding: "2px 8px",
+                      borderRadius: 999,
+                      background: "var(--bg-elevated-2)",
+                      fontSize: 11,
+                      color: "var(--text-muted)",
+                    }}
+                  >
+                    <span
+                      style={{
+                        width: 7,
+                        height: 7,
+                        borderRadius: "50%",
+                        background: colorForMuscleGroup(g),
+                        flexShrink: 0,
+                      }}
+                    />
+                    {g}
+                  </span>
+                ))}
               </div>
               <div style={{ marginTop: 10, display: "flex", flexDirection: "column", gap: 8 }}>
                 {[...r.routine_exercises]

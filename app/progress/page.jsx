@@ -6,6 +6,7 @@ import { useRequireSession } from "../../lib/useSession";
 import { supabase } from "../../lib/supabaseClient";
 import { inputStyle, card } from "../../lib/ui";
 import { estimate1RM } from "../../lib/oneRepMax";
+import EmptyState from "../../components/EmptyState";
 
 const sectionLabel = {
   fontSize: 13,
@@ -75,7 +76,7 @@ export default function ProgressPage() {
     <div>
       <h1 style={{ fontSize: 20 }}>진행 그래프</h1>
       {exerciseNames.length === 0 ? (
-        <p style={{ color: "var(--text-muted)", marginTop: 12 }}>아직 기록된 운동이 없어요. 먼저 운동을 기록해보세요.</p>
+        <EmptyState message="아직 기록된 운동이 없어요. 먼저 운동을 기록해보세요." />
       ) : (
         <>
           <select

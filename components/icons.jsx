@@ -125,6 +125,31 @@ export function SparkleIcon(props) {
   );
 }
 
+export function FireIcon(props) {
+  return (
+    <Svg {...props}>
+      <path d="M12 3c1 3-3 4-3 7a3 3 0 0 0 6 0c1 1 1.5 2.5 1.5 4a4.5 4.5 0 0 1-9 0C7.5 9 12 7 12 3Z" />
+    </Svg>
+  );
+}
+
+export function TrendingDownIcon(props) {
+  return (
+    <Svg {...props}>
+      <path d="M4 8l6 6 4-4 6 8" />
+      <path d="M14 18h6v-6" />
+    </Svg>
+  );
+}
+
+export function FlatLineIcon(props) {
+  return (
+    <Svg {...props}>
+      <path d="M4 12h4l3-3 3 6 3-3h4" />
+    </Svg>
+  );
+}
+
 export function DownloadIcon(props) {
   return (
     <Svg {...props}>
