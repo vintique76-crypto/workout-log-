@@ -8,7 +8,7 @@ import { supabase } from "../lib/supabaseClient";
 import { primaryBtn, card, sectionLabel } from "../lib/ui";
 import { dateStr, formatDuration } from "../lib/date";
 import { computeInsights } from "../lib/insights";
-import WorkoutCharacter from "../components/WorkoutCharacter";
+import HomeHero from "../components/HomeHero";
 import GoalProgress from "../components/GoalProgress";
 import InsightIcon from "../components/InsightIcon";
 import WeeklyActivityBars from "../components/WeeklyActivityBars";
@@ -99,6 +99,7 @@ export default function HomePage() {
   const weekStats = useMemo(() => {
     let days = 0;
     let sets = 0;
+    let prevSets = 0;
     for (let i = 0; i < 7; i++) {
       const d = new Date();
       d.setDate(d.getDate() - i);
@@ -106,6 +107,12 @@ export default function HomePage() {
       if (count > 0) days += 1;
       sets += count;
     }
+    for (let i = 7; i < 14; i++) {
+      const d = new Date();
+      d.setDate(d.getDate() - i);
+      prevSets += dateCounts[dateStr(d)] || 0;
+    }
+    const changePct = prevSets > 0 ? Math.round(((sets - prevSets) / prevSets) * 100) : null;
 
     const from7 = dateStr(new Date(Date.now() - 6 * 86400000));
     const durations = recentWorkouts
@@ -115,7 +122,7 @@ export default function HomePage() {
       ? Math.round(durations.reduce((a, b) => a + b, 0) / durations.length)
       : null;
 
-    return { days, sets, avgDuration };
+    return { days, sets, avgDuration, changePct };
   }, [dateCounts, recentWorkouts]);
 
   const weekBars = useMemo(() => {
@@ -139,48 +146,67 @@ export default function HomePage() {
 
   return (
     <div>
-      <h1 style={{ fontSize: 24, fontWeight: 800 }}>오늘도 화이팅</h1>
+      <div style={{ display: "flex", justifyContent: "space-between", alignItems: "baseline" }}>
+        <span style={{ fontSize: 12, fontWeight: 800, letterSpacing: "0.14em", textTransform: "uppercase" }}>
+          Training Log
+        </span>
+        <span className="mono" style={{ fontSize: 10.5, color: "var(--text-muted)", display: "flex", alignItems: "center", gap: 6 }}>
+          <span
+            style={{
+              width: 6,
+              height: 6,
+              borderRadius: "50%",
+              background: "var(--accent)",
+              boxShadow: "0 0 8px var(--accent-glow), 0 0 0 3px var(--accent-glow)",
+            }}
+          />
+          {dateStr(new Date()).replaceAll("-", ".")}
+        </span>
+      </div>
 
-      <motion.div
-        initial={{ opacity: 0, y: 8 }}
-        animate={{ opacity: 1, y: 0 }}
-        transition={{ duration: 0.3 }}
-        style={{ ...card, marginTop: 14 }}
-      >
-        <WorkoutCharacter days={activeDays90} />
+      <motion.div initial={{ opacity: 0, y: 8 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.3 }}>
+        <HomeHero days={activeDays90} weekSets={weekStats.sets} />
       </motion.div>
 
-      <div style={{ display: "flex", gap: 10, marginTop: 10 }}>
-        <motion.div
-          initial={{ opacity: 0, y: 8 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ duration: 0.3 }}
-          style={{ ...card, flex: 1, marginTop: 0 }}
+      <div style={{ marginTop: 20 }}>
+        <div style={{ display: "flex", justifyContent: "space-between", alignItems: "baseline", marginBottom: 8 }}>
+          <span className="eyebrow">This Week</span>
+        </div>
+        <div
+          style={{
+            ...card,
+            marginTop: 0,
+            padding: 0,
+            display: "grid",
+            gridTemplateColumns: "repeat(3, 1fr)",
+            overflow: "hidden",
+          }}
         >
-          <div style={{ fontSize: 12, color: "var(--text-muted)" }}>이번 주 운동</div>
-          <div className="mono" style={{ fontSize: 28, fontWeight: 800, color: "var(--text)", marginTop: 4 }}>
-            {weekStats.days}
-            <span style={{ fontSize: 14, color: "var(--text-muted)", fontWeight: 500 }}>일</span>
+          <div style={{ padding: "14px 12px" }}>
+            <div className="eyebrow" style={{ marginBottom: 6, fontSize: 10.5 }}>Days</div>
+            <div className="mono" style={{ fontSize: 24, fontWeight: 800, color: "var(--text)" }}>
+              {weekStats.days}<span style={{ fontSize: 11, color: "var(--text-muted)" }}>/7</span>
+            </div>
           </div>
-        </motion.div>
-        <motion.div
-          initial={{ opacity: 0, y: 8 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ duration: 0.3, delay: 0.05 }}
-          style={{ ...card, flex: 1, marginTop: 0 }}
-        >
-          <div style={{ fontSize: 12, color: "var(--text-muted)" }}>이번 주 세트</div>
-          <div className="mono" style={{ fontSize: 28, fontWeight: 800, color: "var(--text)", marginTop: 4 }}>
-            {weekStats.sets}
-            <span style={{ fontSize: 14, color: "var(--text-muted)", fontWeight: 500 }}>개</span>
+          <div style={{ padding: "14px 12px", borderLeft: "1px solid var(--border)" }}>
+            <div className="eyebrow" style={{ marginBottom: 6, fontSize: 10.5 }}>Sets</div>
+            <div className="mono" style={{ fontSize: 24, fontWeight: 800, color: "var(--text)" }}>{weekStats.sets}</div>
           </div>
-        </motion.div>
+          <div style={{ padding: "14px 12px", borderLeft: "1px solid var(--border)" }}>
+            <div className="eyebrow" style={{ marginBottom: 6, fontSize: 10.5 }}>Avg</div>
+            <div className="mono" style={{ fontSize: 24, fontWeight: 800, color: "var(--text)" }}>
+              {weekStats.avgDuration ? Math.round(weekStats.avgDuration / 60) : "—"}
+              {weekStats.avgDuration != null && <span style={{ fontSize: 11, color: "var(--text-muted)" }}>m</span>}
+            </div>
+          </div>
+        </div>
       </div>
 
       <div style={{ marginTop: 10 }}>
         <WeeklyActivityBars
           days={weekBars}
-          avgDuration={weekStats.avgDuration}
+          totalSets={weekStats.sets}
+          changePct={weekStats.changePct}
           onShare={() =>
             setReportData({
               days: weekStats.days,
@@ -198,23 +224,26 @@ export default function HomePage() {
       </div>
 
       {recommendedRoutine ? (
-        <motion.div
-          initial={{ opacity: 0, y: 8 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ duration: 0.3, delay: 0.08 }}
-          style={{ ...card, display: "flex", justifyContent: "space-between", alignItems: "center" }}
-        >
-          <div>
-            <div style={{ fontSize: 11, color: "var(--text-muted)" }}>오늘의 추천 루틴</div>
-            <div style={{ fontWeight: 700, fontSize: 16, marginTop: 2 }}>{recommendedRoutine.name}</div>
-          </div>
-          <Link
-            href={`/workout/new?routine=${recommendedRoutine.id}`}
-            style={{ ...primaryBtn, textDecoration: "none", padding: "10px 16px" }}
+        <div style={{ marginTop: 20 }}>
+          <div className="eyebrow" style={{ marginBottom: 8 }}>Today's Routine</div>
+          <motion.div
+            initial={{ opacity: 0, y: 8 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ duration: 0.3, delay: 0.08 }}
+            style={{ ...card, marginTop: 0, display: "flex", justifyContent: "space-between", alignItems: "center" }}
           >
-            시작
-          </Link>
-        </motion.div>
+            <div>
+              <div style={{ fontWeight: 700, fontSize: 16 }}>{recommendedRoutine.name}</div>
+              <div style={{ fontSize: 10.5, color: "var(--text-faint)", marginTop: 2 }}>가장 오래 쉰 루틴</div>
+            </div>
+            <Link
+              href={`/workout/new?routine=${recommendedRoutine.id}`}
+              style={{ ...primaryBtn, textDecoration: "none", padding: "10px 18px", textTransform: "uppercase", letterSpacing: "0.04em", fontSize: 12.5 }}
+            >
+              Start
+            </Link>
+          </motion.div>
+        </div>
       ) : (
         <Link
           href="/workout/new"
@@ -224,29 +253,31 @@ export default function HomePage() {
         </Link>
       )}
 
-      <GoalProgress goal={goal} entries={bodyEntries} />
+      <div style={{ marginTop: 20 }}>
+        <GoalProgress goal={goal} entries={bodyEntries} />
+      </div>
 
       {topInsight && (
-        <Link href="/coach" style={{ textDecoration: "none", color: "inherit", display: "block" }}>
-          <motion.div
-            initial={{ opacity: 0, y: 8 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ duration: 0.3, delay: 0.1 }}
-            style={{
-              ...card,
-              display: "flex",
-              alignItems: "center",
-              gap: 12,
-              borderLeft: `3px solid ${topInsight.tone === "positive" ? "var(--success)" : "var(--accent)"}`,
-            }}
-          >
-            <InsightIcon type={topInsight.type} tone={topInsight.tone} />
-            <div>
-              <div style={{ fontSize: 11, color: "var(--text-muted)", marginBottom: 4 }}>코칭</div>
+        <div style={{ marginTop: 20 }}>
+          <div className="eyebrow" style={{ marginBottom: 8 }}>Coaching</div>
+          <Link href="/coach" style={{ textDecoration: "none", color: "inherit", display: "block" }}>
+            <motion.div
+              initial={{ opacity: 0, y: 8 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ duration: 0.3, delay: 0.1 }}
+              style={{
+                ...card,
+                marginTop: 0,
+                display: "flex",
+                alignItems: "flex-start",
+                gap: 12,
+              }}
+            >
+              <InsightIcon type={topInsight.type} tone={topInsight.tone} />
               <p style={{ margin: 0, fontSize: 14, lineHeight: 1.5 }}>{topInsight.message}</p>
-            </div>
-          </motion.div>
-        </Link>
+            </motion.div>
+          </Link>
+        </div>
       )}
 
       <h2 style={sectionLabel}>최근 기록</h2>
@@ -263,7 +294,7 @@ export default function HomePage() {
             transition={{ duration: 0.25, delay: i * 0.04 }}
             style={{ ...card, display: "flex", justifyContent: "space-between" }}
           >
-            <span>{w.date}</span>
+            <span className="mono">{w.date}</span>
             <span style={{ color: "var(--text-muted)" }}>{w.routines?.name || "자유 기록"}</span>
           </motion.div>
         ))
