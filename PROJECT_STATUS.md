@@ -12,7 +12,7 @@
   - SQL Editor: https://supabase.com/dashboard/project/cqbrfmxlxltzeugqgjwo/sql/new
   - 인증: 이메일/비밀번호, "Confirm email" 옵션 꺼둔 상태(가입 즉시 로그인 가능)
 - **환경변수(로컬 `.env.local`엔 있음, Vercel 대시보드에도 반드시 동일하게 추가해야 프로덕션에서 푸시 알림이 동작함)**:
-  `NEXT_PUBLIC_SUPABASE_URL`, `NEXT_PUBLIC_SUPABASE_ANON_KEY`, `NEXT_PUBLIC_VAPID_PUBLIC_KEY`, `VAPID_PRIVATE_KEY`, `VAPID_SUBJECT`, `SUPABASE_SERVICE_ROLE_KEY`(DB 전체 접근 가능한 비밀키, 절대 `NEXT_PUBLIC_` 접두사 붙이지 말 것), `CRON_SECRET`(Vercel Cron이 자동으로 `Authorization: Bearer` 헤더로 보내줌)
+  `NEXT_PUBLIC_SUPABASE_URL`, `NEXT_PUBLIC_SUPABASE_ANON_KEY`, `NEXT_PUBLIC_VAPID_PUBLIC_KEYY`(Vercel에서 이름 중복 나서 KEY가 아니라 **KEYY**로 되어 있음, 코드도 이 이름에 맞춰뒀음 — 다시 만들 때 헷갈리지 말 것), `VAPID_PRIVATE_KEY`, `VAPID_SUBJECT`, `SUPABASE_SERVICE_ROLE_KEY`(DB 전체 접근 가능한 비밀키, 절대 `NEXT_PUBLIC_` 접두사 붙이지 말 것), `CRON_SECRET`(Vercel Cron이 자동으로 `Authorization: Bearer` 헤더로 보내줌)
 
 ## 스택
 
