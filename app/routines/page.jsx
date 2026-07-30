@@ -5,7 +5,7 @@ import { motion } from "framer-motion";
 import { useRequireSession } from "../../lib/useSession";
 import { useExerciseStats } from "../../lib/useExerciseStats";
 import { supabase } from "../../lib/supabaseClient";
-import { inputStyle, primaryBtn, smallBtn, card } from "../../lib/ui";
+import { inputStyle, primaryBtn, smallBtn, card, sectionLabel } from "../../lib/ui";
 import { MUSCLE_GROUPS } from "../../lib/muscleGroups";
 import MoveIconBadge from "../../components/MoveIconBadge";
 import ExercisePicker from "../../components/ExercisePicker";
@@ -256,17 +256,7 @@ export default function RoutinesPage() {
         </button>
       </form>
 
-      <h2
-        style={{
-          fontSize: 13,
-          marginTop: 24,
-          color: "var(--text-muted)",
-          textTransform: "uppercase",
-          letterSpacing: 0.4,
-        }}
-      >
-        내 루틴
-      </h2>
+      <h2 style={{ ...sectionLabel, marginTop: 24 }}>내 루틴</h2>
       {loading ? (
         <p>불러오는 중...</p>
       ) : routines.length === 0 ? (

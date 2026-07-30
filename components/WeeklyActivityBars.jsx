@@ -17,7 +17,7 @@ export default function WeeklyActivityBars({ days, avgDuration, onShare }) {
         <div style={{ display: "flex", alignItems: "baseline", gap: 8 }}>
           <span style={{ fontSize: 12, color: "var(--text-muted)" }}>이번 주 활동</span>
           {avgLabel && (
-            <span style={{ fontSize: 12, color: "var(--text-faint)" }}>평균 {avgLabel}</span>
+            <span className="mono" style={{ fontSize: 12, color: "var(--text-faint)" }}>평균 {avgLabel}</span>
           )}
         </div>
         {onShare && (
@@ -41,6 +41,7 @@ export default function WeeklyActivityBars({ days, avgDuration, onShare }) {
                     borderRadius: 4,
                     background: d.isToday ? "var(--accent)" : d.count > 0 ? "var(--accent)" : "var(--bg-elevated-2)",
                     opacity: d.isToday ? 1 : d.count > 0 ? 0.55 : 1,
+                    boxShadow: d.isToday ? "0 0 10px var(--accent-glow)" : "none",
                   }}
                 />
               </div>

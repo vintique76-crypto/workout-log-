@@ -109,7 +109,7 @@ export default function HistoryPage() {
               onClick={() => toggleOpen(w.id)}
             >
               <div>
-                <strong>{w.date}</strong>
+                <strong className="mono">{w.date}</strong>
                 <span style={{ color: "var(--text-muted)", marginLeft: 8, fontSize: 13 }}>
                   {w.routines?.name || "자유 기록"}
                   {formatDuration(w.duration_seconds) && ` · ${formatDuration(w.duration_seconds)}`}

@@ -4,7 +4,7 @@ import { useEffect, useMemo, useState } from "react";
 import { motion } from "framer-motion";
 import { useRequireSession } from "../../lib/useSession";
 import { supabase } from "../../lib/supabaseClient";
-import { card } from "../../lib/ui";
+import { card, sectionLabel } from "../../lib/ui";
 import { BIG3, MILESTONES, nextMilestone, estimate1RM } from "../../lib/oneRepMax";
 import { getStrengthLevel } from "../../lib/strengthStandards";
 import MoveIconBadge from "../../components/MoveIconBadge";
@@ -112,8 +112,17 @@ export default function StrengthPage() {
             transition={{ duration: 0.3 }}
             style={{ ...card, textAlign: "center", padding: 24 }}
           >
-            <div style={{ fontSize: 13, color: "var(--text-muted)" }}>3대 합계</div>
-            <div style={{ fontSize: 44, fontWeight: 800, color: "var(--accent)", marginTop: 4 }}>
+            <div className="eyebrow">3대 합계</div>
+            <div
+              className="mono"
+              style={{
+                fontSize: 44,
+                fontWeight: 800,
+                color: "var(--text)",
+                marginTop: 4,
+                textShadow: "0 0 24px var(--accent-glow)",
+              }}
+            >
               {total}
               <span style={{ fontSize: 18, color: "var(--text-muted)", fontWeight: 500 }}>kg</span>
             </div>
@@ -159,7 +168,7 @@ export default function StrengthPage() {
                   style={{ ...card, flex: 1, marginTop: 0, textAlign: "center" }}
                 >
                   <div style={{ fontSize: 12, color: "var(--text-muted)" }}>{name}</div>
-                  <div style={{ fontSize: 22, fontWeight: 800, marginTop: 4 }}>
+                  <div className="mono" style={{ fontSize: 22, fontWeight: 800, marginTop: 4 }}>
                     {big3Max[name] || "—"}
                     {big3Max[name] > 0 && <span style={{ fontSize: 13, color: "var(--text-muted)" }}>kg</span>}
                   </div>
@@ -190,17 +199,7 @@ export default function StrengthPage() {
             </p>
           )}
 
-          <h2
-            style={{
-              fontSize: 13,
-              marginTop: 28,
-              color: "var(--text-muted)",
-              textTransform: "uppercase",
-              letterSpacing: 0.4,
-            }}
-          >
-            예상 1RM 랭킹
-          </h2>
+          <h2 style={sectionLabel}>예상 1RM 랭킹</h2>
           {ranking.length === 0 ? (
             <EmptyState message="아직 기록이 없어요." />
           ) : (
@@ -212,12 +211,12 @@ export default function StrengthPage() {
                 transition={{ duration: 0.25, delay: i * 0.03 }}
                 style={{ ...card, display: "flex", alignItems: "center", gap: 10 }}
               >
-                <span style={{ width: 20, fontSize: 13, color: "var(--text-faint)", fontWeight: 700 }}>
+                <span className="mono" style={{ width: 20, fontSize: 13, color: "var(--text-faint)", fontWeight: 700 }}>
                   {i + 1}
                 </span>
                 <MoveIconBadge name={r.name} size={30} />
                 <span style={{ flex: 1 }}>{r.name}</span>
-                <strong style={{ color: "var(--accent)" }}>{r.oneRM}kg</strong>
+                <strong className="mono" style={{ color: "var(--accent)" }}>{r.oneRM}kg</strong>
               </motion.div>
             ))
           )}

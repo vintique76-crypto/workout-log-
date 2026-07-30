@@ -314,13 +314,23 @@ export default function EditWorkoutPage() {
               )}
             </div>
 
-            {pr !== undefined && (
-              <p style={{ fontSize: 12, color: "var(--text-muted)", margin: "6px 0 0" }}>개인 최고 기록: {pr}kg</p>
-            )}
-            {ghostSets && (
-              <p style={{ fontSize: 12, color: "var(--text-faint)", margin: "4px 0 0" }}>
-                지난 세션: {ghostSets.filter(Boolean).map((g) => `${g.weight}kg×${g.reps}`).join(", ")}
-              </p>
+            {(pr !== undefined || ghostSets) && (
+              <div style={{ marginTop: 10, paddingTop: 8, borderTop: "1px dashed var(--border)" }}>
+                {pr !== undefined && (
+                  <div style={{ display: "flex", justifyContent: "space-between", fontSize: 11.5, marginBottom: 4 }}>
+                    <span style={{ color: "var(--text-faint)" }}>PR</span>
+                    <span className="mono" style={{ color: "var(--text-muted)" }}>{pr}kg</span>
+                  </div>
+                )}
+                {ghostSets && (
+                  <div style={{ display: "flex", justifyContent: "space-between", fontSize: 11.5 }}>
+                    <span style={{ color: "var(--text-faint)" }}>지난 세션</span>
+                    <span className="mono" style={{ color: "var(--text-muted)" }}>
+                      {ghostSets.filter(Boolean).map((g) => `${g.weight}kg×${g.reps}`).join(", ")}
+                    </span>
+                  </div>
+                )}
+              </div>
             )}
 
             <div style={{ marginTop: 10, display: "flex", flexDirection: "column", gap: 8 }}>
@@ -372,6 +382,7 @@ export default function EditWorkoutPage() {
                       <input
                         type="number"
                         step="0.5"
+                        className="mono"
                         placeholder={ghost ? String(ghost.weight) : "무게"}
                         value={s.weight}
                         onChange={(e) => updateSet(exIdx, setIdx, "weight", e.target.value)}
@@ -379,7 +390,9 @@ export default function EditWorkoutPage() {
                           ...inputStyle,
                           flex: 1,
                           textAlign: "center",
-                          borderColor: isNewPR ? "var(--success)" : undefined,
+                          fontWeight: 700,
+                          borderColor: isNewPR ? "var(--accent)" : undefined,
+                          boxShadow: isNewPR ? "0 0 0 1px var(--accent)" : undefined,
                         }}
                       />
                       <button
@@ -402,10 +415,11 @@ export default function EditWorkoutPage() {
                       </button>
                       <input
                         type="number"
+                        className="mono"
                         placeholder={ghost ? String(ghost.reps) : "횟수"}
                         value={s.reps}
                         onChange={(e) => updateSet(exIdx, setIdx, "reps", e.target.value)}
-                        style={{ ...inputStyle, flex: 1, textAlign: "center" }}
+                        style={{ ...inputStyle, flex: 1, textAlign: "center", fontWeight: 700 }}
                       />
                       <button
                         type="button"
@@ -418,7 +432,7 @@ export default function EditWorkoutPage() {
                     </div>
 
                     {isNewPR && (
-                      <p style={{ fontSize: 12, color: "var(--success)", margin: "6px 0 0" }}>신기록!</p>
+                      <p style={{ fontSize: 12, color: "var(--accent)", fontWeight: 700, margin: "6px 0 0" }}>신기록!</p>
                     )}
 
                     <button
@@ -433,8 +447,8 @@ export default function EditWorkoutPage() {
                         cursor: "pointer",
                         fontWeight: 700,
                         fontSize: 14,
-                        background: s.completed ? "var(--success)" : "var(--bg-elevated)",
-                        color: s.completed ? "#16210f" : "var(--text-muted)",
+                        background: s.completed ? "var(--accent)" : "var(--bg-elevated)",
+                        color: s.completed ? "var(--accent-text)" : "var(--text-muted)",
                       }}
                     >
                       {s.completed ? "완료" : "완료로 표시"}

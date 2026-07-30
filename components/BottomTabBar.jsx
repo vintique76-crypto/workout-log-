@@ -38,7 +38,9 @@ export default function BottomTabBar() {
         display: "flex",
         justifyContent: "space-around",
         background: "var(--bg-elevated)",
-        borderTop: "1px solid var(--border)",
+        backdropFilter: "blur(18px) saturate(140%)",
+        WebkitBackdropFilter: "blur(18px) saturate(140%)",
+        borderTop: "1px solid var(--border-strong)",
         padding: "8px 4px calc(6px + env(safe-area-inset-bottom))",
         zIndex: 20,
       }}
@@ -69,7 +71,7 @@ export default function BottomTabBar() {
                   display: "flex",
                   alignItems: "center",
                   justifyContent: "center",
-                  boxShadow: "0 6px 16px rgba(232, 130, 90, 0.35)",
+                  boxShadow: "0 6px 16px var(--accent-glow)",
                 }}
               >
                 <Icon width={24} height={24} />

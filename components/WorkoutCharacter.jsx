@@ -79,7 +79,7 @@ function Champion() {
     <>
       <circle cx="50" cy="50" r="46" fill="var(--accent)" opacity="0.08" />
       <circle cx="50" cy="50" r="37" fill="var(--accent)" opacity="0.1" />
-      <path d="M50 2l3 8-3 3-3-3Z" fill="var(--success)" />
+      <path d="M50 2l3 8-3 3-3-3Z" fill="var(--accent)" />
       <circle cx="50" cy="20" r="11" fill="var(--accent)" />
       <path d="M29 32 Q50 24 71 32 L64 64 Q50 71 36 64 Z" fill="var(--accent)" />
       <circle cx="26" cy="34" r="8" fill="var(--accent)" />

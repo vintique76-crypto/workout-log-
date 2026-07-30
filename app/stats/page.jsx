@@ -19,6 +19,7 @@ import { useRequireSession } from "../../lib/useSession";
 import { supabase } from "../../lib/supabaseClient";
 import { dateStr } from "../../lib/date";
 import EmptyState from "../../components/EmptyState";
+import { sectionLabel } from "../../lib/ui";
 
 const RANGES = [
   { label: "최근 7일", days: 7 },
@@ -29,10 +30,10 @@ const RANGES = [
 const RADAR_GROUPS = ["가슴", "등", "어깨", "팔", "하체", "코어"];
 
 const tooltipStyle = {
-  background: "#2f2b28",
-  border: "1px solid #3a352f",
+  background: "#363b42",
+  border: "1px solid #383d43",
   borderRadius: 10,
-  color: "#f2ede6",
+  color: "#f0f1f2",
   fontSize: 13,
 };
 
@@ -114,42 +115,32 @@ export default function StatsPage() {
       ) : (
         <ResponsiveContainer width="100%" height={Math.max(220, chartData.length * 44)}>
           <BarChart data={chartData} layout="vertical" margin={{ left: 16, right: 16 }}>
-            <CartesianGrid strokeDasharray="3 3" stroke="#3a352f" />
-            <XAxis type="number" fontSize={11} stroke="#a89f92" />
-            <YAxis type="category" dataKey="group" fontSize={12} width={50} stroke="#a89f92" />
-            <Tooltip contentStyle={tooltipStyle} cursor={{ fill: "rgba(232,130,90,0.08)" }} />
-            <Bar dataKey="volume" fill="#e8825a" radius={[0, 6, 6, 0]} />
+            <CartesianGrid strokeDasharray="3 3" stroke="#383d43" />
+            <XAxis type="number" fontSize={11} stroke="#8a9096" />
+            <YAxis type="category" dataKey="group" fontSize={12} width={50} stroke="#8a9096" />
+            <Tooltip contentStyle={tooltipStyle} cursor={{ fill: "rgba(44,109,255,0.08)" }} />
+            <Bar dataKey="volume" fill="#2c6dff" radius={[0, 6, 6, 0]} />
           </BarChart>
         </ResponsiveContainer>
       )}
 
       {!loading && (
         <>
-          <h2
-            style={{
-              fontSize: 13,
-              marginTop: 28,
-              color: "var(--text-muted)",
-              textTransform: "uppercase",
-              letterSpacing: 0.4,
-            }}
-          >
-            부위 밸런스 (세트 수)
-          </h2>
+          <h2 style={sectionLabel}>부위 밸런스 (세트 수)</h2>
           {!hasRadarData ? (
             <EmptyState message="해당 기간에 기록이 없어요." />
           ) : (
             <ResponsiveContainer width="100%" height={280}>
               <RadarChart cx="50%" cy="50%" outerRadius="70%" data={radarData}>
-                <PolarGrid stroke="#3a352f" />
-                <PolarAngleAxis dataKey="group" fontSize={12} stroke="#a89f92" />
+                <PolarGrid stroke="#383d43" />
+                <PolarAngleAxis dataKey="group" fontSize={12} stroke="#8a9096" />
                 <PolarRadiusAxis domain={[0, radarMax]} tick={false} axisLine={false} />
                 <Tooltip contentStyle={tooltipStyle} formatter={(value, name) => [`${value}세트`, name]} />
                 {recommendedMin != null && (
                   <Radar
                     name="권장 최소"
                     dataKey="recommended"
-                    stroke="#a89f92"
+                    stroke="#8a9096"
                     strokeDasharray="4 3"
                     fill="none"
                     isAnimationActive={false}
@@ -158,9 +149,9 @@ export default function StatsPage() {
                 <Radar
                   name="내 세트 수"
                   dataKey="sets"
-                  stroke="#e8825a"
-                  fill="#e8825a"
-                  fillOpacity={0.35}
+                  stroke="#2c6dff"
+                  fill="#2c6dff"
+                  fillOpacity={0.28}
                   isAnimationActive={false}
                 />
               </RadarChart>

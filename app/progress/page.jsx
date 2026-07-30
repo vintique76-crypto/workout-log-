@@ -4,23 +4,17 @@ import { useEffect, useMemo, useState } from "react";
 import { LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer } from "recharts";
 import { useRequireSession } from "../../lib/useSession";
 import { supabase } from "../../lib/supabaseClient";
-import { inputStyle, card } from "../../lib/ui";
+import { inputStyle, card, sectionLabel as baseSectionLabel } from "../../lib/ui";
 import { estimate1RM } from "../../lib/oneRepMax";
 import EmptyState from "../../components/EmptyState";
 
-const sectionLabel = {
-  fontSize: 13,
-  marginTop: 24,
-  color: "var(--text-muted)",
-  textTransform: "uppercase",
-  letterSpacing: 0.4,
-};
+const sectionLabel = { ...baseSectionLabel, marginTop: 24 };
 
 const tooltipStyle = {
-  background: "#2f2b28",
-  border: "1px solid #3a352f",
+  background: "#363b42",
+  border: "1px solid #383d43",
   borderRadius: 10,
-  color: "#f2ede6",
+  color: "#f0f1f2",
   fontSize: 13,
 };
 
@@ -109,22 +103,22 @@ export default function ProgressPage() {
               <h2 style={sectionLabel}>최고 무게 (kg)</h2>
               <ResponsiveContainer width="100%" height={220}>
                 <LineChart data={chartData}>
-                  <CartesianGrid strokeDasharray="3 3" stroke="#3a352f" />
-                  <XAxis dataKey="date" fontSize={11} stroke="#a89f92" />
-                  <YAxis fontSize={11} stroke="#a89f92" />
+                  <CartesianGrid strokeDasharray="3 3" stroke="#383d43" />
+                  <XAxis dataKey="date" fontSize={11} stroke="#8a9096" />
+                  <YAxis fontSize={11} stroke="#8a9096" />
                   <Tooltip contentStyle={tooltipStyle} />
-                  <Line type="monotone" dataKey="maxWeight" stroke="#e8825a" strokeWidth={2} dot={{ r: 3 }} />
+                  <Line type="monotone" dataKey="maxWeight" stroke="#2c6dff" strokeWidth={2} dot={{ r: 3 }} />
                 </LineChart>
               </ResponsiveContainer>
 
               <h2 style={sectionLabel}>총 볼륨 (횟수 × 무게 합)</h2>
               <ResponsiveContainer width="100%" height={220}>
                 <LineChart data={chartData}>
-                  <CartesianGrid strokeDasharray="3 3" stroke="#3a352f" />
-                  <XAxis dataKey="date" fontSize={11} stroke="#a89f92" />
-                  <YAxis fontSize={11} stroke="#a89f92" />
+                  <CartesianGrid strokeDasharray="3 3" stroke="#383d43" />
+                  <XAxis dataKey="date" fontSize={11} stroke="#8a9096" />
+                  <YAxis fontSize={11} stroke="#8a9096" />
                   <Tooltip contentStyle={tooltipStyle} />
-                  <Line type="monotone" dataKey="volume" stroke="#5aa9a3" strokeWidth={2} dot={{ r: 3 }} />
+                  <Line type="monotone" dataKey="volume" stroke="#3ddc9a" strokeWidth={2} dot={{ r: 3 }} />
                 </LineChart>
               </ResponsiveContainer>
             </>

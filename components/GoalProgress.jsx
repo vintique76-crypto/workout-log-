@@ -24,16 +24,16 @@ function Bar({ label, unit, progress }) {
     <div style={{ marginTop: 12 }}>
       <div style={{ display: "flex", justifyContent: "space-between", fontSize: 12, color: "var(--text-muted)" }}>
         <span>{label}</span>
-        <span style={{ color: progress.reached ? "var(--success)" : "var(--text)", fontWeight: 600 }}>
+        <span className="mono" style={{ color: progress.reached ? "var(--accent)" : "var(--text)", fontWeight: 600 }}>
           {progress.reached ? "목표 달성!" : `${Math.round(progress.pct)}% · ${progress.remaining}${unit} 남음`}
         </span>
       </div>
-      <div style={{ height: 8, borderRadius: 4, background: "var(--bg-elevated-2)", overflow: "hidden", marginTop: 4 }}>
+      <div style={{ height: 6, borderRadius: 3, background: "var(--bg-elevated-2)", overflow: "hidden", marginTop: 4 }}>
         <motion.div
           initial={{ width: 0 }}
           animate={{ width: `${progress.pct}%` }}
           transition={{ duration: 0.6, ease: "easeOut" }}
-          style={{ height: "100%", background: progress.reached ? "var(--success)" : "var(--accent)" }}
+          style={{ height: "100%", background: "var(--accent)", boxShadow: "0 0 8px var(--accent-glow)" }}
         />
       </div>
     </div>
@@ -78,11 +78,11 @@ export default function GoalProgress({ goal, entries }) {
   return (
     <Link href="/weight" style={{ textDecoration: "none", color: "inherit", display: "block" }}>
       <motion.div initial={{ opacity: 0, y: 8 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.3 }} style={card}>
-        <div style={{ fontSize: 11, color: "var(--text-muted)", textTransform: "uppercase", letterSpacing: 0.4 }}>
+        <div style={{ fontSize: 11, fontWeight: 700, color: "var(--text-muted)", textTransform: "uppercase", letterSpacing: "0.09em" }}>
           목표 진행률
         </div>
         {allReached && (
-          <div style={{ fontSize: 13, color: "var(--success)", fontWeight: 700, marginTop: 4 }}>
+          <div style={{ fontSize: 13, color: "var(--accent)", fontWeight: 700, marginTop: 4 }}>
             설정한 목표를 모두 달성했어요!
           </div>
         )}

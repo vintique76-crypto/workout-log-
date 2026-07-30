@@ -4,27 +4,21 @@ import { useEffect, useRef, useState } from "react";
 import { LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer } from "recharts";
 import { useRequireSession } from "../../lib/useSession";
 import { supabase } from "../../lib/supabaseClient";
-import { inputStyle, primaryBtn, smallBtn, card } from "../../lib/ui";
+import { inputStyle, primaryBtn, smallBtn, card, sectionLabel as baseSectionLabel } from "../../lib/ui";
 import { todayStr } from "../../lib/date";
 import { recognizeInbodyPhoto } from "../../lib/inbodyOcr";
 import { getSkeletalMuscleGrade, getBodyFatGrade } from "../../lib/bodyCompStandards";
 import EmptyState from "../../components/EmptyState";
 
 const tooltipStyle = {
-  background: "#2f2b28",
-  border: "1px solid #3a352f",
+  background: "#363b42",
+  border: "1px solid #383d43",
   borderRadius: 10,
-  color: "#f2ede6",
+  color: "#f0f1f2",
   fontSize: 13,
 };
 
-const sectionLabel = {
-  fontSize: 13,
-  marginTop: 24,
-  color: "var(--text-muted)",
-  textTransform: "uppercase",
-  letterSpacing: 0.4,
-};
+const sectionLabel = { ...baseSectionLabel, marginTop: 24 };
 
 const smallLabel = { display: "block", fontSize: 12, color: "var(--text-muted)", marginBottom: 4 };
 
@@ -360,11 +354,11 @@ export default function WeightPage() {
           <h2 style={sectionLabel}>체중</h2>
           <ResponsiveContainer width="100%" height={200}>
             <LineChart data={chartData}>
-              <CartesianGrid strokeDasharray="3 3" stroke="#3a352f" />
-              <XAxis dataKey="date" fontSize={11} stroke="#a89f92" />
-              <YAxis fontSize={11} domain={["auto", "auto"]} stroke="#a89f92" />
+              <CartesianGrid strokeDasharray="3 3" stroke="#383d43" />
+              <XAxis dataKey="date" fontSize={11} stroke="#8a9096" />
+              <YAxis fontSize={11} domain={["auto", "auto"]} stroke="#8a9096" />
               <Tooltip contentStyle={tooltipStyle} />
-              <Line type="monotone" dataKey="weight" stroke="#e8825a" strokeWidth={2} dot={{ r: 3 }} />
+              <Line type="monotone" dataKey="weight" stroke="#2c6dff" strokeWidth={2} dot={{ r: 3 }} />
             </LineChart>
           </ResponsiveContainer>
 
@@ -373,11 +367,11 @@ export default function WeightPage() {
               <h2 style={sectionLabel}>골격근량</h2>
               <ResponsiveContainer width="100%" height={200}>
                 <LineChart data={muscleData}>
-                  <CartesianGrid strokeDasharray="3 3" stroke="#3a352f" />
-                  <XAxis dataKey="date" fontSize={11} stroke="#a89f92" />
-                  <YAxis fontSize={11} domain={["auto", "auto"]} stroke="#a89f92" />
+                  <CartesianGrid strokeDasharray="3 3" stroke="#383d43" />
+                  <XAxis dataKey="date" fontSize={11} stroke="#8a9096" />
+                  <YAxis fontSize={11} domain={["auto", "auto"]} stroke="#8a9096" />
                   <Tooltip contentStyle={tooltipStyle} />
-                  <Line type="monotone" dataKey="value" stroke="#5aa9a3" strokeWidth={2} dot={{ r: 3 }} />
+                  <Line type="monotone" dataKey="value" stroke="#3ddc9a" strokeWidth={2} dot={{ r: 3 }} />
                 </LineChart>
               </ResponsiveContainer>
             </>
@@ -388,11 +382,11 @@ export default function WeightPage() {
               <h2 style={sectionLabel}>체지방률</h2>
               <ResponsiveContainer width="100%" height={200}>
                 <LineChart data={fatData}>
-                  <CartesianGrid strokeDasharray="3 3" stroke="#3a352f" />
-                  <XAxis dataKey="date" fontSize={11} stroke="#a89f92" />
-                  <YAxis fontSize={11} domain={["auto", "auto"]} stroke="#a89f92" />
+                  <CartesianGrid strokeDasharray="3 3" stroke="#383d43" />
+                  <XAxis dataKey="date" fontSize={11} stroke="#8a9096" />
+                  <YAxis fontSize={11} domain={["auto", "auto"]} stroke="#8a9096" />
                   <Tooltip contentStyle={tooltipStyle} />
-                  <Line type="monotone" dataKey="value" stroke="#e2574c" strokeWidth={2} dot={{ r: 3 }} />
+                  <Line type="monotone" dataKey="value" stroke="#ff5c5c" strokeWidth={2} dot={{ r: 3 }} />
                 </LineChart>
               </ResponsiveContainer>
             </>
@@ -442,11 +436,11 @@ function GoalRow({ label, current, target, unit, direction }) {
   return (
     <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", padding: "6px 0" }}>
       <span style={{ fontSize: 13, color: "var(--text-muted)" }}>{label}</span>
-      <span style={{ fontSize: 13 }}>
+      <span className="mono" style={{ fontSize: 13 }}>
         {hasCurrent ? `${current}${unit}` : "—"}
         <span style={{ color: "var(--text-faint)" }}> → 목표 {target}{unit}</span>
         {hasCurrent && (
-          <span style={{ marginLeft: 6, color: reached ? "var(--success)" : "var(--accent)", fontWeight: 600 }}>
+          <span className="mono" style={{ marginLeft: 6, color: "var(--accent)", fontWeight: 600 }}>
             {statusText}
           </span>
         )}

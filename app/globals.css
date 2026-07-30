@@ -1,19 +1,23 @@
 :root {
-  --bg: #1c1917;
-  --bg-elevated: #252220;
-  --bg-elevated-2: #2f2b28;
-  --border: #3a352f;
-  --text: #f2ede6;
-  --text-muted: #a89f92;
-  --text-faint: #6f675d;
-  --accent: #e8825a;
-  --accent-hover: #f0966f;
-  --accent-text: #1c1917;
-  --accent-2: #5aa9a3;
-  --success: #8fbf6a;
-  --danger: #e2574c;
-  --radius: 14px;
-  --radius-sm: 10px;
+  --bg: #16181a;
+  --bg-elevated: #2c3036e6;
+  --bg-elevated-2: #363b42;
+  --border: #383d43;
+  --border-strong: #4c525a;
+  --text: #f0f1f2;
+  --text-muted: #8a9096;
+  --text-faint: #565c62;
+  --accent: #2c6dff;
+  --accent-hover: #4d84ff;
+  --accent-text: #ffffff;
+  --accent-glow: rgba(44, 109, 255, 0.35);
+  --accent-2: #3ddc9a;
+  --success: #3ddc9a;
+  --danger: #ff5c5c;
+  --warn: #f5a623;
+  --radius: 10px;
+  --radius-sm: 7px;
+  --mono: "JetBrains Mono", ui-monospace, "SF Mono", Menlo, Consolas, monospace;
 }
 
 * {
@@ -52,6 +56,19 @@ a {
 
 input::placeholder {
   color: var(--text-faint);
+}
+
+.mono {
+  font-family: var(--mono);
+  font-variant-numeric: tabular-nums;
+}
+
+.eyebrow {
+  font-size: 11px;
+  font-weight: 700;
+  letter-spacing: 0.09em;
+  text-transform: uppercase;
+  color: var(--text-muted);
 }
 
 input[type="date"]::-webkit-calendar-picker-indicator {

@@ -5,7 +5,7 @@ import { useEffect, useMemo, useState } from "react";
 import { motion } from "framer-motion";
 import { useRequireSession } from "../lib/useSession";
 import { supabase } from "../lib/supabaseClient";
-import { primaryBtn, card } from "../lib/ui";
+import { primaryBtn, card, sectionLabel } from "../lib/ui";
 import { dateStr, formatDuration } from "../lib/date";
 import { computeInsights } from "../lib/insights";
 import WorkoutCharacter from "../components/WorkoutCharacter";
@@ -14,14 +14,6 @@ import InsightIcon from "../components/InsightIcon";
 import WeeklyActivityBars from "../components/WeeklyActivityBars";
 import EmptyState from "../components/EmptyState";
 import WeeklyReportModal from "../components/WeeklyReportModal";
-
-const sectionLabel = {
-  fontSize: 13,
-  marginTop: 28,
-  color: "var(--text-muted)",
-  textTransform: "uppercase",
-  letterSpacing: 0.4,
-};
 
 export default function HomePage() {
   const session = useRequireSession();
@@ -166,7 +158,7 @@ export default function HomePage() {
           style={{ ...card, flex: 1, marginTop: 0 }}
         >
           <div style={{ fontSize: 12, color: "var(--text-muted)" }}>이번 주 운동</div>
-          <div style={{ fontSize: 28, fontWeight: 800, color: "var(--accent)", marginTop: 4 }}>
+          <div className="mono" style={{ fontSize: 28, fontWeight: 800, color: "var(--text)", marginTop: 4 }}>
             {weekStats.days}
             <span style={{ fontSize: 14, color: "var(--text-muted)", fontWeight: 500 }}>일</span>
           </div>
@@ -178,7 +170,7 @@ export default function HomePage() {
           style={{ ...card, flex: 1, marginTop: 0 }}
         >
           <div style={{ fontSize: 12, color: "var(--text-muted)" }}>이번 주 세트</div>
-          <div style={{ fontSize: 28, fontWeight: 800, color: "var(--accent)", marginTop: 4 }}>
+          <div className="mono" style={{ fontSize: 28, fontWeight: 800, color: "var(--text)", marginTop: 4 }}>
             {weekStats.sets}
             <span style={{ fontSize: 14, color: "var(--text-muted)", fontWeight: 500 }}>개</span>
           </div>

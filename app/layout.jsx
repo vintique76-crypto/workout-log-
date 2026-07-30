@@ -15,7 +15,7 @@ export const metadata = {
 };
 
 export const viewport = {
-  themeColor: "#1c1917",
+  themeColor: "#16181a",
 };
 
 export default function RootLayout({ children }) {
@@ -27,6 +27,10 @@ export default function RootLayout({ children }) {
           as="style"
           crossOrigin="anonymous"
           href="https://cdn.jsdelivr.net/gh/orioncactus/pretendard@v1.3.9/dist/web/static/pretendard.css"
+        />
+        <link
+          rel="stylesheet"
+          href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@500;700&display=swap"
         />
       </head>
       <body>

@@ -16,9 +16,20 @@
 
 Next.js 15(App Router) + React 19 · Supabase(Auth+Postgres) · framer-motion · recharts · Pretendard 웹폰트(CDN) · PWA(manifest.json + sw.js) · tesseract.js(무료 클라이언트 OCR, 서버/API 키 없이 브라우저에서 이미지 텍스트 인식)
 
-## 디자인 시스템
+## 디자인 시스템 (2026-07-30 전면 리디자인)
 
-다크 테마(완전 검정 아님) — 배경 `#1c1917`(따뜻한 차콜), 포인트 컬러 `#e8825a`(테라코타). CSS 변수는 `app/globals.css`에 정의(`--bg`, `--bg-elevated`, `--bg-elevated-2`, `--text`, `--text-muted`, `--accent` 등). 공통 스타일 상수는 `lib/ui.js`(`inputStyle`, `primaryBtn`, `smallBtn`, `card`). 하단 고정 탭바(홈/히스토리/기록/통계/더보기) 구조.
+기존 "따뜻한 차콜 + 테라코타" 다크 테마를 폐기하고 **"Monochrome & Industrial Blue"** 컨셉으로 전면 교체(요청: "스포티하면서 힙한 느낌", On Running/Salomon/Montbell 오마주 → 최종적으로 랩장비/HUD 데이터 인터페이스 방향으로 확정).
+
+- **배경**: 딥 건메탈 `#16181a`
+- **패널**: 반투명 글래스(`background: #2c3036e6` + `backdrop-filter: blur(18px) saturate(140%)`) — `lib/ui.js`의 `card`에 적용되어 있어 이 객체를 쓰는 모든 카드가 자동으로 유리 패널이 됨
+- **텍스트**: `--text #f0f1f2`(밝은 스틸화이트), `--text-muted #8a9096`, `--text-faint #565c62`
+- **테두리**: `--border #383d43`, `--border-strong #4c525a`
+- **강조색은 코발트 블루 하나만**(`--accent #2c6dff`) — 글로우 효과는 `--accent-glow: rgba(44,109,255,0.35)`를 box-shadow/text-shadow에 사용. **완료/달성 등 "성공" 상태도 전부 이 블루로 통일**(사용자 피드백: "완료 표시가 혼자 초록색이라 어색해 보임" → 전용 그린을 없애고 블루로 맞춤). `--success`/`--warn`은 코칭 인사이트의 긍정/경고 톤처럼 서로 다른 두 가지 상태를 구분해야 하는 곳에서만 남겨둠(`InsightIcon`, `/coach`, `/page.jsx` 홈 인사이트 카드).
+- **숫자 폰트**: 모든 통계/무게/횟수/날짜 숫자는 모노스페이스(`className="mono"`, `app/globals.css`의 `.mono` 유틸리티 = JetBrains Mono, `app/layout.jsx`에서 Google Fonts CDN으로 로드) + `font-variant-numeric: tabular-nums`로 "계기판 숫자" 느낌을 냄. 섹션 소제목은 `lib/ui.js`의 `sectionLabel`(대문자 + `letterSpacing: "0.09em"` + `fontWeight: 700`)을 공용으로 import해서 씀 — 예전엔 페이지마다 각자 `sectionLabel`을 복붙했었고 `letterSpacing: 0.4`처럼 단위 없는 숫자라 실제로는 적용도 안 되는 버그가 있었음, 이번에 전부 통합하며 수정.
+- **부위 색상**(`lib/muscleGroupColors.js`), **차트 색**(recharts stroke/fill, `app/stats`·`app/progress`·`app/weight`), **공유 이미지 캔버스 색**(`lib/shareImage.js`)도 전부 이 팔레트로 교체 완료.
+- CSS 변수는 여전히 `app/globals.css`에 정의(`--bg`, `--bg-elevated`, `--bg-elevated-2`, `--text`, `--text-muted`, `--accent` 등 — 변수 이름은 유지하고 값만 교체했음). 공통 스타일 상수는 `lib/ui.js`(`inputStyle`, `primaryBtn`, `smallBtn`, `card`, `sectionLabel`). 하단 고정 탭바(홈/히스토리/기록/통계/더보기)도 글래스 블러 적용.
+- **라이트 모드 없음** — 이 앱은 다크 전용이라 `prefers-color-scheme`/`data-theme` 분기는 없음. (참고: 디자인 시안을 만들 때 Artifact 목업은 라이트+다크 둘 다 만들었지만, 실제 앱은 항상 다크 하나만 씀.)
+- 디자인 방향을 정하기 전에 Artifact로 홈 화면 목업을 여러 벌 만들어 사용자에게 먼저 승인받는 과정을 거쳤음(1차: 캔버스/스트릿 오마주 → 폐기, 2차: Industrial Blue → 채택). 앞으로 큰 디자인 변경 시 이 방식(먼저 목업으로 합의 → 실제 코드 적용)을 유지할 것.
 
 ## DB 스키마 (Supabase Postgres, 전부 RLS 적용 · user_id = auth.uid())
 
@@ -78,6 +89,7 @@ Next.js 15(App Router) + React 19 · Supabase(Auth+Postgres) · framer-motion ·
 17. `/stats`에 부위 밸런스 레이더 차트(세트 수 기준) 추가 — 볼륨(kg) 막대그래프와 별개로, 부위별 절대 세트 수를 6각형 레이더로 보여줘서 특정 부위 소홀 여부를 한눈에 파악
 18. 전반적 시각 요소 보강(요청: "적재적소에 시각적인 요소") — 코칭 인사이트 타입별 아이콘(`InsightIcon`, `lib/insights.js`에 `type` 필드 추가), 홈 화면 최근 7일 세트 수 미니 바 그래프(`WeeklyActivityBars`), 여러 페이지에 흩어져 있던 "기록 없음" 회색 텍스트를 공용 `EmptyState` 컴포넌트로 통일, 루틴 카드에 구성 부위 색상 칩(`lib/muscleGroupColors.js`) 추가
 19. 운동 소요시간 자동 기록(`workouts.duration_seconds`, migration_005) + 히스토리/홈 화면 평균 소요시간 표시, 점진적 과부하 다음 목표 제안(`lib/overloadSuggestion.js`), `/stats` 레이더에 권장 최소 세트 수 점선 오버레이, 홈 화면 "이번 주 활동" 카드에 주간 리포트 텍스트/이미지 공유 버튼(`WeeklyReportModal`) 추가
+20. 전체 UI/UX 리디자인 — "Monochrome & Industrial Blue" (요청: "AI가 만든 느낌 없애고 스포티하면서 힙하게", On Running/Salomon/Montbell 오마주). 배경 딥건메탈+반투명 글래스 패널+코발트 블루 단일 강조색, 숫자는 전부 모노스페이스(JetBrains Mono)로 계기판 느낌. 완료/달성 상태도 그린 대신 블루로 통일. 상세 토큰은 위 "디자인 시스템" 섹션 참고.
 
 ## 알려진 이슈 · 작업 시 유의사항
 
