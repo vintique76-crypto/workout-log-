@@ -16,6 +16,7 @@ import SetTagPicker from "../../../components/SetTagPicker";
 import ShareWorkoutModal from "../../../components/ShareWorkoutModal";
 import { buildShareData } from "../../../lib/shareWorkout";
 import { suggestNextTarget } from "../../../lib/overloadSuggestion";
+import { enqueueWorkout, isNetworkError } from "../../../lib/offlineQueue";
 
 const stepperBtnStyle = {
   width: 34,
@@ -81,6 +82,7 @@ function NewWorkoutPageInner() {
   const [exercises, setExercises] = useState([emptyExercise()]);
   const [saving, setSaving] = useState(false);
   const [error, setError] = useState("");
+  const [offlineSaved, setOfflineSaved] = useState(false);
   const [pickerIndex, setPickerIndex] = useState(null);
   const [tagPicker, setTagPicker] = useState(null);
   const [timerSignal, setTimerSignal] = useState(0);
@@ -218,6 +220,7 @@ function NewWorkoutPageInner() {
 
   const handleSave = async () => {
     setError("");
+    setOfflineSaved(false);
     const rows = [];
     exercises.forEach((ex) => {
       const exName = ex.name.trim();
@@ -240,8 +243,17 @@ function NewWorkoutPageInner() {
       return;
     }
     setSaving(true);
+    const durationSeconds = Math.round((Date.now() - startedAt) / 1000);
+
+    if (typeof navigator !== "undefined" && !navigator.onLine) {
+      enqueueWorkout({ userId: session.user.id, routineId: routineId || null, date, durationSeconds, rows });
+      setOfflineSaved(true);
+      setExercises([emptyExercise()]);
+      setSaving(false);
+      return;
+    }
+
     try {
-      const durationSeconds = Math.round((Date.now() - startedAt) / 1000);
       const { data: workout, error: wErr } = await supabase
         .from("workouts")
         .insert({
@@ -271,7 +283,13 @@ function NewWorkoutPageInner() {
       const routine = routines.find((r) => r.id === routineId);
       setShareData(buildShareData({ date, routineName: routine?.name, exerciseGroups }));
     } catch (err) {
-      setError(err.message);
+      if (isNetworkError(err)) {
+        enqueueWorkout({ userId: session.user.id, routineId: routineId || null, date, durationSeconds, rows });
+        setOfflineSaved(true);
+        setExercises([emptyExercise()]);
+      } else {
+        setError(err.message);
+      }
     } finally {
       setSaving(false);
     }
@@ -521,6 +539,11 @@ function NewWorkoutPageInner() {
       </button>
 
       {error && <p style={{ color: "var(--danger)", fontSize: 13, marginTop: 12 }}>{error}</p>}
+      {offlineSaved && (
+        <p style={{ color: "var(--accent)", fontSize: 13, marginTop: 12 }}>
+          오프라인 상태예요. 기기에 저장해뒀다가 연결되면 자동으로 동기화할게요.
+        </p>
+      )}
 
       <button
         onClick={handleSave}

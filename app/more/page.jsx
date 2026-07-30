@@ -1,12 +1,14 @@
 "use client";
 
 import Link from "next/link";
+import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
 import { useRequireSession } from "../../lib/useSession";
 import { supabase } from "../../lib/supabaseClient";
-import { card } from "../../lib/ui";
+import { card, smallBtn } from "../../lib/ui";
 import { ListIcon, TrendingUpIcon, ScaleIcon, LogOutIcon, SparkleIcon, TrophyIcon, DownloadIcon } from "../../components/icons";
 import { DumbbellIcon } from "../../components/movementIcons";
+import { isPushSupported, getPushStatus, subscribeToPush, unsubscribeFromPush } from "../../lib/pushNotifications";
 
 const ITEMS = [
   { href: "/coach", label: "코칭", desc: "기록 기반 자동 인사이트", Icon: SparkleIcon },
@@ -21,6 +23,13 @@ const ITEMS = [
 export default function MorePage() {
   const session = useRequireSession();
   const router = useRouter();
+  const [pushStatus, setPushStatus] = useState("unsupported");
+  const [pushBusy, setPushBusy] = useState(false);
+  const [pushError, setPushError] = useState("");
+
+  useEffect(() => {
+    if (isPushSupported()) getPushStatus().then(setPushStatus);
+  }, []);
 
   if (!session) return <p>로딩 중...</p>;
 
@@ -29,9 +38,52 @@ export default function MorePage() {
     router.replace("/login");
   };
 
+  const handlePushToggle = async () => {
+    setPushError("");
+    setPushBusy(true);
+    try {
+      if (pushStatus === "subscribed") {
+        await unsubscribeFromPush();
+        setPushStatus("unsubscribed");
+      } else {
+        await subscribeToPush(session.user.id);
+        setPushStatus("subscribed");
+      }
+    } catch (err) {
+      setPushError(err.message);
+    } finally {
+      setPushBusy(false);
+    }
+  };
+
   return (
     <div>
       <h1 style={{ fontSize: 20 }}>더보기</h1>
+
+      {pushStatus !== "unsupported" && (
+        <div style={{ ...card, display: "flex", alignItems: "center", justifyContent: "space-between", gap: 12 }}>
+          <div>
+            <div style={{ fontWeight: 600 }}>운동 리마인더</div>
+            <div style={{ fontSize: 13, color: "var(--text-muted)", marginTop: 2 }}>
+              {pushStatus === "subscribed" ? "알림 켜짐 · 2일 이상 쉬면 알려드려요" : pushStatus === "denied" ? "브라우저 알림 권한이 차단돼 있어요" : "며칠간 운동을 안 하면 알려드려요"}
+            </div>
+            {pushError && <div style={{ fontSize: 12, color: "var(--danger)", marginTop: 4 }}>{pushError}</div>}
+          </div>
+          <button
+            onClick={handlePushToggle}
+            disabled={pushBusy || pushStatus === "denied"}
+            style={{
+              ...smallBtn,
+              flexShrink: 0,
+              background: pushStatus === "subscribed" ? "var(--accent)" : "var(--bg-elevated-2)",
+              color: pushStatus === "subscribed" ? "var(--accent-text)" : "var(--text)",
+              border: "1px solid var(--border-strong)",
+            }}
+          >
+            {pushBusy ? "처리 중..." : pushStatus === "subscribed" ? "끄기" : "켜기"}
+          </button>
+        </div>
+      )}
 
       {ITEMS.map(({ href, label, desc, Icon }) => (
         <Link key={href} href={href} style={{ textDecoration: "none", color: "inherit", display: "block" }}>

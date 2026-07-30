@@ -2,6 +2,7 @@ import "./globals.css";
 import BottomTabBar from "../components/BottomTabBar";
 import RegisterSW from "../components/RegisterSW";
 import PageTransition from "../components/PageTransition";
+import OfflineSync from "../components/OfflineSync";
 
 export const metadata = {
   title: "내 운동 기록",
@@ -35,6 +36,7 @@ export default function RootLayout({ children }) {
       </head>
       <body>
         <RegisterSW />
+        <OfflineSync />
         <main style={{ maxWidth: 480, margin: "0 auto", padding: "16px", paddingBottom: 96 }}>
           <PageTransition>{children}</PageTransition>
         </main>

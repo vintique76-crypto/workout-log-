@@ -58,12 +58,22 @@ create table goals (
   updated_at timestamptz not null default now()
 );
 
+create table push_subscriptions (
+  id uuid primary key default gen_random_uuid(),
+  user_id uuid not null references auth.users(id) on delete cascade,
+  endpoint text not null unique,
+  p256dh text not null,
+  auth text not null,
+  created_at timestamptz not null default now()
+);
+
 alter table routines enable row level security;
 alter table routine_exercises enable row level security;
 alter table workouts enable row level security;
 alter table workout_sets enable row level security;
 alter table body_weights enable row level security;
 alter table goals enable row level security;
+alter table push_subscriptions enable row level security;
 
 create policy "routines_owner" on routines
   for all
@@ -91,6 +101,11 @@ create policy "body_weights_owner" on body_weights
   with check (auth.uid() = user_id);
 
 create policy "goals_owner" on goals
+  for all
+  using (auth.uid() = user_id)
+  with check (auth.uid() = user_id);
+
+create policy "push_subscriptions_owner" on push_subscriptions
   for all
   using (auth.uid() = user_id)
   with check (auth.uid() = user_id);
