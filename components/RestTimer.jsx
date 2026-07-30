@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect, useRef, useState } from "react";
+import { card } from "../lib/ui";
 
 const PRESETS = [60, 90, 120];
 const AUTO_START_SECONDS = 90;
@@ -113,26 +114,35 @@ export default function RestTimer({ autoStartSignal }) {
   return (
     <div
       style={{
+        ...card,
         position: "sticky",
         top: 8,
-        background: "var(--bg-elevated-2)",
-        color: "var(--text)",
-        borderRadius: "var(--radius)",
-        padding: 12,
         marginTop: 10,
         zIndex: 5,
+        padding: 12,
       }}
     >
-      <div style={{ display: "flex", gap: 8, alignItems: "center", justifyContent: "center" }}>
-        <span style={{ fontSize: 13, color: "var(--text-muted)" }}>휴식 타이머</span>
+      <div className="eyebrow" style={{ marginBottom: 8 }}>Rest Timer</div>
+      <div style={{ display: "flex", gap: 8 }}>
         {PRESETS.map((p) => (
           <button
             key={p}
             type="button"
             onClick={() => start(p)}
-            style={{ ...activeBtnStyle, background: "var(--bg-elevated)", color: "var(--text)" }}
+            style={{
+              flex: 1,
+              textAlign: "center",
+              padding: "9px 0",
+              borderRadius: "var(--radius-sm)",
+              border: "1px solid var(--border-strong)",
+              background: "transparent",
+              color: "var(--text-muted)",
+              fontSize: 12.5,
+              fontWeight: 600,
+              cursor: "pointer",
+            }}
           >
-            {p}초
+            {p}s
           </button>
         ))}
       </div>

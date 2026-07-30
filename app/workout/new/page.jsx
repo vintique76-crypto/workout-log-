@@ -18,13 +18,13 @@ import { buildShareData } from "../../../lib/shareWorkout";
 import { suggestNextTarget } from "../../../lib/overloadSuggestion";
 
 const stepperBtnStyle = {
-  width: 36,
-  height: 40,
-  borderRadius: 8,
-  border: "1px solid var(--border)",
-  background: "var(--bg-elevated-2)",
+  width: 34,
+  height: 34,
+  borderRadius: "var(--radius-sm)",
+  border: "1px solid var(--border-strong)",
+  background: "transparent",
   color: "var(--text)",
-  fontSize: 18,
+  fontSize: 17,
   fontWeight: 700,
   cursor: "pointer",
   flexShrink: 0,
@@ -32,11 +32,24 @@ const stepperBtnStyle = {
 
 const smallIconBtn = {
   padding: "4px 8px",
-  borderRadius: 8,
-  border: "1px solid var(--border)",
-  background: "var(--bg-elevated)",
+  borderRadius: "var(--radius-sm)",
+  border: "1px solid var(--border-strong)",
+  background: "transparent",
   color: "var(--text-muted)",
+  fontSize: 11.5,
+  fontWeight: 600,
+  cursor: "pointer",
+};
+
+const ghostAddBtn = {
+  width: "100%",
+  textAlign: "center",
+  padding: 10,
   fontSize: 12,
+  color: "var(--text-muted)",
+  border: "1px dashed var(--border-strong)",
+  borderRadius: "var(--radius-sm)",
+  background: "transparent",
   cursor: "pointer",
 };
 
@@ -269,21 +282,29 @@ function NewWorkoutPageInner() {
 
   return (
     <div>
-      <h1 style={{ fontSize: 20 }}>운동 기록</h1>
+      <div style={{ display: "flex", justifyContent: "space-between", alignItems: "baseline" }}>
+        <span style={{ fontSize: 12, fontWeight: 800, letterSpacing: "0.14em", textTransform: "uppercase" }}>
+          New Session
+        </span>
+        <span className="mono" style={{ fontSize: 10.5, color: "var(--text-muted)" }}>{date}</span>
+      </div>
 
-      <div style={card}>
-        <label style={labelStyle}>날짜</label>
-        <input type="date" value={date} onChange={(e) => setDate(e.target.value)} style={inputStyle} />
-
-        <label style={{ ...labelStyle, marginTop: 12 }}>루틴 선택 (선택 안 하면 자유 기록)</label>
-        <select value={routineId} onChange={(e) => handleRoutineChange(e.target.value)} style={inputStyle}>
-          <option value="">자유 기록</option>
-          {routines.map((r) => (
-            <option key={r.id} value={r.id}>
-              {r.name}
-            </option>
-          ))}
-        </select>
+      <div style={{ ...card, display: "flex", gap: 10 }}>
+        <div style={{ flex: 1 }}>
+          <label style={labelStyle}>날짜</label>
+          <input type="date" className="mono" value={date} onChange={(e) => setDate(e.target.value)} style={inputStyle} />
+        </div>
+        <div style={{ flex: 1 }}>
+          <label style={labelStyle}>루틴</label>
+          <select value={routineId} onChange={(e) => handleRoutineChange(e.target.value)} style={inputStyle}>
+            <option value="">자유 기록</option>
+            {routines.map((r) => (
+              <option key={r.id} value={r.id}>
+                {r.name}
+              </option>
+            ))}
+          </select>
+        </div>
       </div>
 
       <RestTimer autoStartSignal={timerSignal} />
@@ -312,7 +333,16 @@ function NewWorkoutPageInner() {
               <select
                 value={ex.muscleGroup}
                 onChange={(e) => updateExerciseMuscleGroup(exIdx, e.target.value)}
-                style={{ ...inputStyle, width: 90, flex: "0 0 auto" }}
+                style={{
+                  width: 84,
+                  flex: "0 0 auto",
+                  padding: "8px 6px",
+                  borderRadius: "var(--radius-sm)",
+                  border: "1px solid var(--border-strong)",
+                  background: "transparent",
+                  color: "var(--text-faint)",
+                  fontSize: 11.5,
+                }}
               >
                 {MUSCLE_GROUPS.map((g) => (
                   <option key={g} value={g}>
@@ -363,7 +393,8 @@ function NewWorkoutPageInner() {
                     key={setIdx}
                     style={{
                       background: "var(--bg-elevated-2)",
-                      borderRadius: 10,
+                      border: "1px solid var(--border)",
+                      borderRadius: "var(--radius-sm)",
                       padding: 10,
                     }}
                   >
@@ -477,7 +508,7 @@ function NewWorkoutPageInner() {
                   </div>
                 );
               })}
-              <button onClick={() => addSet(exIdx)} style={smallBtn}>
+              <button onClick={() => addSet(exIdx)} style={ghostAddBtn}>
                 + 세트 추가
               </button>
             </div>
@@ -485,14 +516,18 @@ function NewWorkoutPageInner() {
         );
       })}
 
-      <button onClick={addExercise} style={{ ...smallBtn, marginTop: 12 }}>
+      <button onClick={addExercise} style={{ ...ghostAddBtn, marginTop: 4 }}>
         + 종목 추가
       </button>
 
       {error && <p style={{ color: "var(--danger)", fontSize: 13, marginTop: 12 }}>{error}</p>}
 
-      <button onClick={handleSave} disabled={saving} style={{ ...primaryBtn, width: "100%", marginTop: 16 }}>
-        {saving ? "저장 중..." : "기록 저장"}
+      <button
+        onClick={handleSave}
+        disabled={saving}
+        style={{ ...primaryBtn, width: "100%", marginTop: 16, textTransform: "uppercase", letterSpacing: "0.04em" }}
+      >
+        {saving ? "저장 중..." : "Save Session"}
       </button>
 
       <ExercisePicker

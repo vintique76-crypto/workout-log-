@@ -8,14 +8,14 @@ export default function MoveIconBadge({ name, muscleGroup, size = 36, onClick })
   const style = {
     width: size,
     height: size,
-    borderRadius: size / 2.5,
-    background: "var(--bg-elevated-2)",
+    borderRadius: "var(--radius-sm)",
+    background: "transparent",
     color: "var(--accent)",
     display: "flex",
     alignItems: "center",
     justifyContent: "center",
     flexShrink: 0,
-    border: "none",
+    border: "1px solid var(--border-strong)",
     padding: 0,
     cursor: onClick ? "pointer" : "default",
   };
