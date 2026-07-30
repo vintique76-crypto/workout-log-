@@ -5,6 +5,7 @@ import {
   FlatLineIcon,
   ScaleIcon,
   ClockIcon,
+  FlagIcon,
   SparkleIcon,
 } from "./icons";
 
@@ -15,6 +16,8 @@ const ICON_BY_TYPE = {
   plateau: FlatLineIcon,
   imbalance: ScaleIcon,
   overtraining: ClockIcon,
+  deload: ClockIcon,
+  goalProjection: FlagIcon,
 };
 
 export default function InsightIcon({ type, tone, size = 32 }) {

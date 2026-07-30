@@ -150,6 +150,15 @@ export function FlatLineIcon(props) {
   );
 }
 
+export function FlagIcon(props) {
+  return (
+    <Svg {...props}>
+      <path d="M5 21V4" />
+      <path d="M5 4h13l-3 4 3 4H5" />
+    </Svg>
+  );
+}
+
 export function DownloadIcon(props) {
   return (
     <Svg {...props}>

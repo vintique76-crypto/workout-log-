@@ -90,7 +90,7 @@ export default function HomePage() {
         });
       });
       setDateCounts(counts);
-      const insights = computeInsights({ sets });
+      const insights = computeInsights({ sets, goal: goalData, entries: bodyData || [] });
       setTopInsight(insights[0] || null);
       setLoading(false);
     })();

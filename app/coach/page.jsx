@@ -20,10 +20,14 @@ export default function CoachPage() {
       const from = new Date();
       from.setDate(from.getDate() - 60);
 
-      const { data } = await supabase
-        .from("workout_sets")
-        .select("exercise_name, muscle_group, weight, reps, workouts!inner(date)")
-        .gte("workouts.date", dateStr(from));
+      const [{ data }, { data: goalData }, { data: bodyData }] = await Promise.all([
+        supabase
+          .from("workout_sets")
+          .select("exercise_name, muscle_group, weight, reps, workouts!inner(date)")
+          .gte("workouts.date", dateStr(from)),
+        supabase.from("goals").select("target_weight, target_skeletal_muscle, target_body_fat").maybeSingle(),
+        supabase.from("body_weights").select("date, weight").order("date", { ascending: true }),
+      ]);
 
       const sets = (data || [])
         .map((s) => ({
@@ -35,7 +39,7 @@ export default function CoachPage() {
         }))
         .filter((s) => s.date);
 
-      setInsights(computeInsights({ sets }));
+      setInsights(computeInsights({ sets, goal: goalData, entries: bodyData || [] }));
     })();
   }, [session]);
 
