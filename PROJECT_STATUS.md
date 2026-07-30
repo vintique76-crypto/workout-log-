@@ -11,6 +11,8 @@
 - **Supabase 프로젝트**: `cqbrfmxlxltzeugqgjwo` (https://cqbrfmxlxltzeugqgjwo.supabase.co)
   - SQL Editor: https://supabase.com/dashboard/project/cqbrfmxlxltzeugqgjwo/sql/new
   - 인증: 이메일/비밀번호, "Confirm email" 옵션 꺼둔 상태(가입 즉시 로그인 가능)
+- **환경변수(로컬 `.env.local`엔 있음, Vercel 대시보드에도 반드시 동일하게 추가해야 프로덕션에서 푸시 알림이 동작함)**:
+  `NEXT_PUBLIC_SUPABASE_URL`, `NEXT_PUBLIC_SUPABASE_ANON_KEY`, `NEXT_PUBLIC_VAPID_PUBLIC_KEY`, `VAPID_PRIVATE_KEY`, `VAPID_SUBJECT`, `SUPABASE_SERVICE_ROLE_KEY`(DB 전체 접근 가능한 비밀키, 절대 `NEXT_PUBLIC_` 접두사 붙이지 말 것), `CRON_SECRET`(Vercel Cron이 자동으로 `Authorization: Bearer` 헤더로 보내줌)
 
 ## 스택
 
@@ -59,7 +61,11 @@ Next.js 15(App Router) + React 19 · Supabase(Auth+Postgres) · framer-motion ·
 | `/coach` | 코칭 인사이트 전체 목록(규칙 기반, 무료 — 스트릭/볼륨추세/정체/불균형/과훈련/디로드제안/목표도달예측 7종) |
 | `/prs` | 종목별 최고 무게 갱신 히스토리를 시간순으로 보여주는 PR 타임라인 |
 | `/export` | 운동/체중 기록을 CSV로 다운로드 |
-| `/more` | 더보기 메뉴 진입점 + 로그아웃 |
+| `/more` | 더보기 메뉴 진입점 + 푸시 알림 켜기/끄기 토글 + 로그아웃 |
+
+## 서버 라우트 (`app/api/`)
+
+- `GET /api/send-reminders` — `CRON_SECRET`으로 보호된 리마인더 발송 엔드포인트. `SUPABASE_SERVICE_ROLE_KEY`로 전체 유저의 `push_subscriptions`/`workouts`를 조회해서 2일 이상 미운동 유저에게 web-push 발송, 만료된 구독(410/404)은 자동 삭제. `vercel.json`에서 매일 10:00 UTC(한국시간 19시)에 Vercel Cron이 호출.
 
 ## 주요 컴포넌트 (`components/`)
 
@@ -92,6 +98,7 @@ Next.js 15(App Router) + React 19 · Supabase(Auth+Postgres) · framer-motion ·
 19. 운동 소요시간 자동 기록(`workouts.duration_seconds`, migration_005) + 히스토리/홈 화면 평균 소요시간 표시, 점진적 과부하 다음 목표 제안(`lib/overloadSuggestion.js`), `/stats` 레이더에 권장 최소 세트 수 점선 오버레이, 홈 화면 "이번 주 활동" 카드에 주간 리포트 텍스트/이미지 공유 버튼(`WeeklyReportModal`) 추가
 20. 전체 UI/UX 리디자인 — "Monochrome & Industrial Blue" (요청: "AI가 만든 느낌 없애고 스포티하면서 힙하게", On Running/Salomon/Montbell 오마주). 배경 딥건메탈+반투명 글래스 패널+코발트 블루 단일 강조색, 숫자는 전부 모노스페이스(JetBrains Mono)로 계기판 느낌. 완료/달성 상태도 그린 대신 블루로 통일. 색상 교체뿐 아니라 홈/운동기록/통계 화면 구조 자체를 승인된 Artifact 목업에 맞춰 재구성(STAGE 히어로, 3열 스탯그리드, 웨이브폼 액티비티 트레이스, 커스텀 가로바 등). 상세 토큰은 위 "디자인 시스템" 섹션 참고.
 21. 코칭 인사이트 2종 추가(체중 추세 기반 목표 도달 예상 주수, 5주 이상 지속된 고볼륨 감지 시 디로드 제안) + 종목별 최고 무게 갱신 히스토리를 시간순으로 보여주는 PR 타임라인 페이지(`/prs`) 추가
+22. PWA 홈화면 숏컷("운동 기록 시작" 바로가기), 오프라인 안전 저장(네트워크 끊겨도 기기에 큐잉 후 재연결시 자동 동기화), 푸시 알림/리마인더(2일 이상 미운동 시 web-push로 알림, Vercel Cron 매일 실행) 추가 — 실제로 오프라인→온라인 전환 시 큐가 비워지고 DB에 반영되는 것까지 검증 완료
 
 ## 알려진 이슈 · 작업 시 유의사항
 
