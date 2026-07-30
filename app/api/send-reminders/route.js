@@ -16,7 +16,7 @@ export async function GET(request) {
 
   webpush.setVapidDetails(
     process.env.VAPID_SUBJECT,
-    process.env.NEXT_PUBLIC_VAPID_PUBLIC_KEY,
+    process.env.NEXT_PUBLIC_VAPID_PUBLIC_KEYY,
     process.env.VAPID_PRIVATE_KEY
   );
 
